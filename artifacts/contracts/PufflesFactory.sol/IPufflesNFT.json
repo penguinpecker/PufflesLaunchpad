@@ -1,0 +1,96 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IPufflesNFT",
+  "sourceName": "contracts/PufflesFactory.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "notRevealedURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPerWalletWL",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPerWalletPublic",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPerTx",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "wlPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pubPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "treasury",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "feeBps",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "royaltyReceiver",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "royaltyBps",
+              "type": "uint96"
+            }
+          ],
+          "internalType": "struct CollectionConfig",
+          "name": "cfg",
+          "type": "tuple"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

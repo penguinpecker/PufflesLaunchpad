@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Hashes",
+  "sourceName": "@openzeppelin/contracts/utils/cryptography/Hashes.sol",
+  "abi": [],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220b175253536b487d12fe3b9fef10f14697cccc7539ac28fa6db0bf98b1a1e310664736f6c63430008160033",
+  "deployedBytecode": "0x600080fdfea2646970667358221220b175253536b487d12fe3b9fef10f14697cccc7539ac28fa6db0bf98b1a1e310664736f6c63430008160033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

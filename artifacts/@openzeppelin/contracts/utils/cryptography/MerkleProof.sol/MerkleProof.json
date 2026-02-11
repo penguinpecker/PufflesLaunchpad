@@ -1,0 +1,16 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MerkleProof",
+  "sourceName": "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "MerkleProofInvalidMultiproof",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea2646970667358221220a6bfefb1331c9da0d8e1e655111e5f2195a806c7426192628109cee5b16e199964736f6c63430008160033",
+  "deployedBytecode": "0x600080fdfea2646970667358221220a6bfefb1331c9da0d8e1e655111e5f2195a806c7426192628109cee5b16e199964736f6c63430008160033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
