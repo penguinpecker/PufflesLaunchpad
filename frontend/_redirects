@@ -1,4 +1,5 @@
-/mint  /app/mint  200
-/mint/*  /app/mint  200
-/collection  /app/collection  200
-/collection/*  /app/collection  200
+/mint  /mint.html  200
+/mint/*  /mint.html  200
+/collection  /collection.html  200
+/collection/*  /collection.html  200
+/faucet  /faucet.html  200
