@@ -52,6 +52,7 @@
       const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
       const params = new URLSearchParams(window.location.search);
       const queryAddr = params.get("collection");
+      const querySlug = params.get("slug");
 
       // 1. Direct address in path
       if (path && /^0x[a-fA-F0-9]{40}$/.test(path)) {
@@ -60,9 +61,10 @@
         return;
       }
 
-      // 2. Slug in path → resolve via registry
-      if (path && path !== "mint.html" && path !== "mint" && path !== "index.html") {
-        COLLECTION_SLUG = path.toLowerCase();
+      // 2. Slug in query param (from SPA redirect) or slug in path
+      const slug = querySlug || (path && path !== "mint.html" && path !== "mint" && path !== "index.html" ? path : null);
+      if (slug) {
+        COLLECTION_SLUG = slug.toLowerCase();
         try {
           const provider = new ethers.JsonRpcProvider("https://evm.donut.rpc.push.org/");
           const registry = new ethers.Contract(REGISTRY, [
@@ -80,7 +82,7 @@
         return;
       }
 
-      // 3. Query param fallback
+      // 3. Query param address fallback
       if (queryAddr && /^0x[a-fA-F0-9]{40}$/.test(queryAddr)) {
         COLLECTION = ethers.getAddress(queryAddr);
       }
