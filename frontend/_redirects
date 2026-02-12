@@ -1,0 +1,4 @@
+/mint  /mint.html  200
+/mint/*  /mint.html  200
+/collection  /collection.html  200
+/collection/*  /collection.html  200
