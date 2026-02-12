@@ -173,6 +173,12 @@ contract PufflesNFT is ERC721A, ERC2981, Ownable2Step, ReentrancyGuard {
         _cloneName = name_;
         _cloneSymbol = symbol_;
         _isClone = true;
+        // ERC721A v4: _currentIndex is private at slot 0, must use assembly
+        // Set to _startTokenId() (1) so totalSupply doesn't underflow
+        uint256 startId = _startTokenId();
+        assembly {
+            sstore(0, startId)
+        }
     }
 
     function name() public view virtual override returns (string memory) {
@@ -363,3 +369,4 @@ contract PufflesNFT is ERC721A, ERC2981, Ownable2Step, ReentrancyGuard {
 
     receive() external payable {}
 }
+

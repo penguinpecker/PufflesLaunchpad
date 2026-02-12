@@ -44,8 +44,8 @@
       ]
     },
     "/Users/penguinpecker/Documents/PufflesLaunchpad/contracts/PufflesNFT.sol": {
-      "lastModificationDate": 1770805818752,
-      "contentHash": "d47a738379d7f4907ba9fd321024619c",
+      "lastModificationDate": 1770889745325,
+      "contentHash": "b737fa3eec018dbfb42d11aa8662a334",
       "sourceName": "contracts/PufflesNFT.sol",
       "solcConfig": {
         "version": "0.8.22",

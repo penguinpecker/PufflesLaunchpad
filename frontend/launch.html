@@ -471,13 +471,15 @@ function navigateTo(view, addr) {
 // ═══════════════════════════════════════════════════════
 // FACTORY DISCOVERY
 // ═══════════════════════════════════════════════════════
+const COLLECTION_START_INDEX = 2;
+
 async function discoverCollections() {
   const countCall = [{ target: FACTORY_ADDRESS, allowFailure: false, callData: factoryIface.encodeFunctionData('totalCollections') }];
   const countResult = await puffleCall.aggregate3.staticCall(countCall);
   const totalCount = Number(ethers.AbiCoder.defaultAbiCoder().decode(['uint256'], countResult[0].returnData)[0]);
-  if (collectionAddresses.length === totalCount) return;
+  if (collectionAddresses.length === (totalCount - COLLECTION_START_INDEX)) return;
   const newIndexes = [];
-  for (let i = collectionAddresses.length; i < totalCount; i++) newIndexes.push(i);
+  for (let i = COLLECTION_START_INDEX + collectionAddresses.length; i < totalCount; i++) newIndexes.push(i);
   if (newIndexes.length === 0) return;
   const addrCalls = newIndexes.map(i => ({ target: FACTORY_ADDRESS, allowFailure: true, callData: factoryIface.encodeFunctionData('collections', [i]) }));
   const addrResults = await puffleCall.aggregate3.staticCall(addrCalls);
