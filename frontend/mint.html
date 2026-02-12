@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Puffles — Mint</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0a0f;overflow-x:hidden}
+    @keyframes floatOrb1{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(-30px,40px)scale(1.1)}66%{transform:translate(20px,-30px)scale(.95)}}
+    @keyframes floatOrb2{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(40px,-30px)scale(1.05)}66%{transform:translate(-20px,50px)scale(.9)}}
+    @keyframes floatOrb3{0%,100%{transform:translate(-50%,-50%)scale(1);opacity:.5}50%{transform:translate(-50%,-50%)scale(1.3);opacity:1}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .mint-btn:hover:not(:disabled){transform:translateY(-1px)!important;box-shadow:0 8px 32px rgba(221,107,255,.35),0 0 0 1px rgba(221,107,255,.3)!important}
+    .mint-btn:active:not(:disabled){transform:translateY(0)!important}
+    .connect-btn:hover{background:rgba(221,107,255,.15)!important;border-color:rgba(221,107,255,.5)!important}
+    .qty-btn:hover:not(:disabled){background:rgba(221,107,255,.15)!important;border-color:rgba(221,107,255,.4)!important}
+    .footer-link:hover{color:#dd6bff!important}
+    .fi{animation:fadeInUp .6s ease-out forwards}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // ─── CONFIG ───
+    const CHAIN_ID = 42101;
+    const CHAIN_ID_HEX = "0xA475";
+    const RPC_URL = "https://evm.donut.rpc.push.org/";
+    const EXPLORER = "https://donut.push.network";
+    const FAUCET = "https://faucet.push.org";
+    const PUFFLECALL = "0x27D910BdBCAA3A283B5EDe98f3edfC82324FD63F";
+
+    const PHASE_NAMES = { 0: "PAUSED", 1: "WHITELIST", 2: "PUBLIC" };
+
+    // Get collection address from URL
+    const params = new URLSearchParams(window.location.search);
+    const COLLECTION = params.get("collection");
+
+    // ─── ABIs ───
+    const PUFFLECALL_ABI = [
+      "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) external payable returns (tuple(bool success, bytes returnData)[])",
+    ];
+    const NFT_ABI = [
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function totalSupply() view returns (uint256)",
+      "function maxSupply() view returns (uint256)",
+      "function salePhase() view returns (uint8)",
+      "function whitelistPrice() view returns (uint256)",
+      "function publicPrice() view returns (uint256)",
+      "function maxPerWalletWL() view returns (uint256)",
+      "function maxPerWalletPublic() view returns (uint256)",
+      "function whitelistMinted(address) view returns (uint256)",
+      "function publicMinted(address) view returns (uint256)",
+      "function whitelistMint(uint256 quantity, bytes32[] calldata merkleProof) payable",
+      "function publicMint(uint256 quantity) payable",
+    ];
+
+    // ─── NFT PREVIEW DATA ───
+    const NFT_PREVIEWS = [
+      { id: 1, name: "Push Genesis #1", rarity: "Legendary", color1: "#dd6bff", color2: "#6b94ff", shape: "diamond" },
+      { id: 2, name: "Push Genesis #2", rarity: "Epic", color1: "#ff6bb5", color2: "#dd6bff", shape: "hexagon" },
+      { id: 3, name: "Push Genesis #3", rarity: "Rare", color1: "#6b94ff", color2: "#50dc78", shape: "circle" },
+      { id: 4, name: "Push Genesis #4", rarity: "Epic", color1: "#ffb86b", color2: "#ff6bb5", shape: "triangle" },
+      { id: 5, name: "Push Genesis #5", rarity: "Legendary", color1: "#50dc78", color2: "#6b94ff", shape: "star" },
+    ];
+
+    // ─── GENERATIVE NFT ART ───
+    function NFTArtwork({ color1, color2, shape, size = 220 }) {
+      const canvasRef = useRef(null);
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const s = size * 2;
+        canvas.width = s; canvas.height = s;
+        ctx.clearRect(0, 0, s, s);
+        const bgGrad = ctx.createRadialGradient(s/2, s/2, 0, s/2, s/2, s*0.7);
+        bgGrad.addColorStop(0, "#1a1a2e"); bgGrad.addColorStop(1, "#0a0a14");
+        ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, s, s);
+        ctx.fillStyle = "rgba(221,107,255,0.06)";
+        for (let x = 20; x < s; x += 30) for (let y = 20; y < s; y += 30) { ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill(); }
+        const ringGrad = ctx.createRadialGradient(s/2, s/2, s*0.15, s/2, s/2, s*0.42);
+        ringGrad.addColorStop(0, "transparent"); ringGrad.addColorStop(0.5, color1+"18"); ringGrad.addColorStop(0.8, color2+"10"); ringGrad.addColorStop(1, "transparent");
+        ctx.fillStyle = ringGrad; ctx.fillRect(0, 0, s, s);
+        ctx.save(); ctx.translate(s/2, s/2);
+        const mainGrad = ctx.createLinearGradient(-s*0.2, -s*0.2, s*0.2, s*0.2);
+        mainGrad.addColorStop(0, color1); mainGrad.addColorStop(1, color2);
+        ctx.shadowColor = color1; ctx.shadowBlur = 40; ctx.fillStyle = mainGrad; ctx.strokeStyle = color1+"60"; ctx.lineWidth = 2;
+        const r = s * 0.16;
+        if (shape === "diamond") { ctx.beginPath(); ctx.moveTo(0,-r*1.3); ctx.lineTo(r,0); ctx.lineTo(0,r*1.3); ctx.lineTo(-r,0); ctx.closePath(); }
+        else if (shape === "hexagon") { ctx.beginPath(); for (let i=0;i<6;i++) { const a=(Math.PI/3)*i-Math.PI/6; i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r); } ctx.closePath(); }
+        else if (shape === "circle") { ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); }
+        else if (shape === "triangle") { ctx.beginPath(); ctx.moveTo(0,-r*1.2); ctx.lineTo(r*1.1,r*0.7); ctx.lineTo(-r*1.1,r*0.7); ctx.closePath(); }
+        else if (shape === "star") { ctx.beginPath(); for (let i=0;i<10;i++) { const a=(Math.PI/5)*i-Math.PI/2; const d=i%2===0?r*1.1:r*0.5; i===0?ctx.moveTo(Math.cos(a)*d,Math.sin(a)*d):ctx.lineTo(Math.cos(a)*d,Math.sin(a)*d); } ctx.closePath(); }
+        ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
+        const ig = ctx.createRadialGradient(0,-r*0.3,0,0,0,r);
+        ig.addColorStop(0,"rgba(255,255,255,0.15)"); ig.addColorStop(1,"transparent");
+        ctx.fillStyle = ig; ctx.fill(); ctx.restore();
+        for (let i=0;i<8;i++) { const a=(Math.PI*2*i)/8; const oR=s*0.32+Math.sin(i*1.5)*20; const px=s/2+Math.cos(a)*oR,py=s/2+Math.sin(a)*oR; const pg=ctx.createRadialGradient(px,py,0,px,py,6); pg.addColorStop(0,i%2===0?color1+"cc":color2+"cc"); pg.addColorStop(1,"transparent"); ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2); ctx.fill(); }
+        ctx.fillStyle = "rgba(255,255,255,0.07)"; ctx.font = `bold ${s*0.035}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("PUSH CHAIN", s/2, s-24);
+      }, [color1, color2, shape, size]);
+      return <canvas ref={canvasRef} style={{ width: size, height: size, borderRadius: 14, display: "block" }} />;
+    }
+
+    // ─── NFT CARD (carousel item) ───
+    function NFTCard({ nft, active, onClick, maxSupply }) {
+      const rc = nft.rarity === "Legendary" ? "#ffb86b" : nft.rarity === "Epic" ? "#dd6bff" : "#6b94ff";
+      return (
+        <div onClick={onClick} style={{ flex: "0 0 auto", cursor: "pointer", transition: "all 0.5s cubic-bezier(0.22,1,0.36,1)", transform: active ? "scale(1) translateY(0)" : "scale(0.85) translateY(8px)", opacity: active ? 1 : 0.45, filter: active ? "none" : "brightness(0.6) saturate(0.7)" }}>
+          <div style={{ borderRadius: 18, overflow: "hidden", border: active ? `2px solid ${nft.color1}40` : "2px solid rgba(221,107,255,0.06)", boxShadow: active ? `0 12px 48px ${nft.color1}25, 0 0 80px ${nft.color1}08` : "none", background: "rgba(18,18,28,0.9)", transition: "all 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
+            <NFTArtwork color1={nft.color1} color2={nft.color2} shape={nft.shape} size={200} />
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5, background: "rgba(10,10,15,0.7)", backdropFilter: "blur(8px)" }}>
+              <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", color: "#e8e4f0" }}>{nft.name}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: rc, padding: "2px 8px", borderRadius: 100, background: rc+"12", border: `1px solid ${rc}20` }}>{nft.rarity}</span>
+                <span style={{ fontSize: 9, color: "rgba(232,228,240,0.25)", fontFamily: "'Space Mono', monospace" }}>#{nft.id}/{maxSupply}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── MAIN APP ───
+    function App() {
+      // ─── State ───
+      const [account, setAccount] = useState(null);
+      const [chainOk, setChainOk] = useState(false);
+      const [collName, setCollName] = useState("Loading...");
+      const [collSymbol, setCollSymbol] = useState("");
+      const [phase, setPhase] = useState(0);
+      const [totalMinted, setTotalMinted] = useState(0);
+      const [maxSupply, setMaxSupply] = useState(0);
+      const [quantity, setQuantity] = useState(1);
+      const [loading, setLoading] = useState(false);
+      const [message, setMessage] = useState(null);
+      const [wlMinted, setWlMinted] = useState(0);
+      const [pubMinted, setPubMinted] = useState(0);
+      const [wlPrice, setWlPrice] = useState(0);
+      const [pubPrice, setPubPrice] = useState(0);
+      const [wlPriceRaw, setWlPriceRaw] = useState(null);
+      const [pubPriceRaw, setPubPriceRaw] = useState(null);
+      const [maxWL, setMaxWL] = useState(2);
+      const [maxPublic, setMaxPublic] = useState(5);
+      const [activeNft, setActiveNft] = useState(0);
+      const [autoPlay, setAutoPlay] = useState(true);
+      const [dataLoaded, setDataLoaded] = useState(false);
+
+      const isConnected = !!account && chainOk;
+      const currentPrice = phase === 1 ? wlPrice : pubPrice;
+      const maxForPhase = phase === 1 ? maxWL : maxPublic;
+      const mintedForPhase = phase === 1 ? wlMinted : pubMinted;
+      const remaining = maxForPhase - mintedForPhase;
+      const supplyRemaining = maxSupply - totalMinted;
+      // For now, whitelist is open to all. Merkle proof support can be added per collection.
+      const isWhitelisted = true;
+      const canMint = isConnected && (phase === 1 || phase === 2) && remaining > 0 && supplyRemaining > 0 && isWhitelisted;
+      const pct = maxSupply > 0 ? (totalMinted / maxSupply) * 100 : 0;
+      const maxQty = Math.max(1, Math.min(remaining, supplyRemaining, 10));
+
+      // ─── Read-only provider + PuffleCall ───
+      const providerRef = useRef(null);
+      const nftIfaceRef = useRef(null);
+
+      useEffect(() => {
+        providerRef.current = new ethers.JsonRpcProvider(RPC_URL);
+        nftIfaceRef.current = new ethers.Interface(NFT_ABI);
+      }, []);
+
+      // ─── Fetch collection data via PuffleCall ───
+      const fetchContractData = useCallback(async () => {
+        if (!COLLECTION || !providerRef.current || !nftIfaceRef.current) return;
+        const pc = new ethers.Contract(PUFFLECALL, PUFFLECALL_ABI, providerRef.current);
+        const iface = nftIfaceRef.current;
+
+        // Base calls (no wallet needed)
+        const baseCalls = [
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("name") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("symbol") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("totalSupply") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("maxSupply") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("salePhase") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("whitelistPrice") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("publicPrice") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("maxPerWalletWL") },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("maxPerWalletPublic") },
+        ];
+
+        // User-specific calls
+        const userCalls = account ? [
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("whitelistMinted", [account]) },
+          { target: COLLECTION, allowFailure: true, callData: iface.encodeFunctionData("publicMinted", [account]) },
+        ] : [];
+
+        try {
+          const results = await pc.aggregate3.staticCall([...baseCalls, ...userCalls]);
+          const dec = ethers.AbiCoder.defaultAbiCoder();
+          const d = (idx, type) => { try { return results[idx].success ? dec.decode([type], results[idx].returnData)[0] : null; } catch { return null; } };
+
+          const name = d(0, "string") || "Unknown Collection";
+          const symbol = d(1, "string") || "???";
+          let ts = Number(d(2, "uint256") || 0n);
+          const ms = Number(d(3, "uint256") || 0n);
+          // ERC721A clone overflow protection
+          if (ts > ms || ts > 1e18) ts = 0;
+          const sp = Number(d(4, "uint8") || 0);
+          const wpRaw = d(5, "uint256");
+          const ppRaw = d(6, "uint256");
+          const mwl = Number(d(7, "uint256") || 2n);
+          const mpub = Number(d(8, "uint256") || 5n);
+
+          setCollName(name);
+          setCollSymbol(symbol);
+          setTotalMinted(ts);
+          setMaxSupply(ms);
+          setPhase(sp);
+          setMaxWL(mwl);
+          setMaxPublic(mpub);
+
+          if (wpRaw !== null) { setWlPriceRaw(wpRaw); setWlPrice(parseFloat(ethers.formatEther(wpRaw))); }
+          if (ppRaw !== null) { setPubPriceRaw(ppRaw); setPubPrice(parseFloat(ethers.formatEther(ppRaw))); }
+
+          if (account && results.length > 9) {
+            const wm = Number(d(9, "uint256") || 0n);
+            const pm = Number(d(10, "uint256") || 0n);
+            setWlMinted(wm);
+            setPubMinted(pm);
+          }
+
+          setDataLoaded(true);
+          document.title = `${name} — Mint on Puffles`;
+        } catch (err) { console.error("Multicall fetch error:", err); }
+      }, [account]);
+
+      // Auto-rotate carousel
+      useEffect(() => {
+        if (!autoPlay) return;
+        const iv = setInterval(() => setActiveNft(p => (p + 1) % NFT_PREVIEWS.length), 3000);
+        return () => clearInterval(iv);
+      }, [autoPlay]);
+
+      // Wallet listeners
+      useEffect(() => {
+        if (window.ethereum) {
+          window.ethereum.request({ method: "eth_accounts" }).then(a => {
+            if (a.length) { setAccount(a[0]); checkChain(); }
+          });
+          const handleAccounts = a => { setAccount(a[0] || null); };
+          const handleChain = () => checkChain();
+          window.ethereum.on("accountsChanged", handleAccounts);
+          window.ethereum.on("chainChanged", handleChain);
+          return () => {
+            window.ethereum.removeListener("accountsChanged", handleAccounts);
+            window.ethereum.removeListener("chainChanged", handleChain);
+          };
+        }
+      }, []);
+
+      // Poll contract data every 5s
+      useEffect(() => {
+        if (!COLLECTION) return;
+        fetchContractData();
+        const iv = setInterval(fetchContractData, 5000);
+        return () => clearInterval(iv);
+      }, [fetchContractData]);
+
+      const checkChain = async () => {
+        try {
+          const id = await window.ethereum.request({ method: "eth_chainId" });
+          setChainOk(parseInt(id, 16) === CHAIN_ID);
+        } catch { setChainOk(false); }
+      };
+
+      const switchChain = async () => {
+        try {
+          await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID_HEX }] });
+        } catch (err) {
+          if (err.code === 4902) {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [{ chainId: CHAIN_ID_HEX, chainName: "Push Chain Testnet", nativeCurrency: { name: "Push Coin", symbol: "PC", decimals: 18 }, rpcUrls: [RPC_URL], blockExplorerUrls: [EXPLORER] }],
+            });
+          }
+        }
+        checkChain();
+      };
+
+      const connectWallet = async () => {
+        if (!window.ethereum) { setMessage({ text: "Install MetaMask or a Web3 wallet", type: "error" }); return; }
+        try {
+          const a = await window.ethereum.request({ method: "eth_requestAccounts" });
+          setAccount(a[0]); await switchChain();
+        } catch { setMessage({ text: "Connection cancelled", type: "error" }); }
+      };
+
+      // ─── MINT ───
+      const handleMint = async () => {
+        if (!canMint) return;
+        setLoading(true); setMessage(null);
+        try {
+          const browserProvider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await browserProvider.getSigner();
+          const contract = new ethers.Contract(COLLECTION, NFT_ABI, signer);
+          const priceRaw = phase === 1 ? wlPriceRaw : pubPriceRaw;
+          const totalCost = priceRaw * BigInt(quantity);
+          let tx;
+
+          if (phase === 1) {
+            // Whitelist mint — empty proof for now (owner/open WL). Add Merkle proof support as needed.
+            tx = await contract.whitelistMint(quantity, [], { value: totalCost });
+          } else {
+            tx = await contract.publicMint(quantity, { value: totalCost });
+          }
+
+          setMessage({ text: "Transaction submitted, waiting for confirmation...", type: "info" });
+          await tx.wait();
+          setMessage({ text: `Minted ${quantity} ${collSymbol}${quantity > 1 ? "s" : ""}! 🎉`, type: "success" });
+          await fetchContractData();
+        } catch (err) {
+          console.error("Mint error:", err);
+          const reason = err?.reason || err?.data?.message || err?.message || "Transaction failed";
+          setMessage({ text: reason, type: "error" });
+        } finally { setLoading(false); }
+      };
+
+      const trunc = a => a ? `${a.slice(0,6)}...${a.slice(-4)}` : "";
+      const an = NFT_PREVIEWS[activeNft];
+      const rarC = an.rarity === "Legendary" ? "#ffb86b" : an.rarity === "Epic" ? "#dd6bff" : "#6b94ff";
+
+      // ─── ERROR: no collection param ───
+      if (!COLLECTION) {
+        return (
+          <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#e8e4f0", fontFamily: "'Space Mono',monospace", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 48 }}>🐧</div>
+            <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 24 }}>No Collection Specified</h2>
+            <p style={{ color: "rgba(232,228,240,.5)", maxWidth: 400 }}>Add <code style={{ background: "rgba(221,107,255,.1)", padding: "2px 8px", borderRadius: 6, color: "#dd6bff" }}>?collection=0x...</code> to the URL, or browse collections from the portfolio.</p>
+          </div>
+        );
+      }
+
+      // ─── STYLE OBJECTS ───
+      const S = {
+        app: { minHeight: "100vh", background: "#0a0a0f", color: "#e8e4f0", fontFamily: "'Space Mono','JetBrains Mono',monospace", position: "relative", overflow: "hidden" },
+        orb1: { position: "fixed", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(221,107,255,.12) 0%,transparent 70%)", top: -200, right: -150, filter: "blur(80px)", animation: "floatOrb1 12s ease-in-out infinite", pointerEvents: "none" },
+        orb2: { position: "fixed", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(107,148,255,.1) 0%,transparent 70%)", bottom: -150, left: -100, filter: "blur(60px)", animation: "floatOrb2 15s ease-in-out infinite", pointerEvents: "none" },
+        orb3: { position: "fixed", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,107,175,.08) 0%,transparent 70%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)", filter: "blur(50px)", animation: "floatOrb3 10s ease-in-out infinite", pointerEvents: "none" },
+        grid: { position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(221,107,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(221,107,255,.03) 1px,transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none", zIndex: 0 },
+        wrap: { position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", padding: "32px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 },
+        badge: { display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 100, border: "1px solid rgba(221,107,255,.2)", background: "rgba(221,107,255,.06)", fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#dd6bff", fontWeight: 700 },
+        title: { fontSize: 48, fontWeight: 800, textAlign: "center", lineHeight: 1.05, letterSpacing: "-.03em", fontFamily: "'Space Grotesk',sans-serif", background: "linear-gradient(135deg,#fff 0%,#dd6bff 50%,#6b94ff 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" },
+        sub: { fontSize: 14, color: "rgba(232,228,240,.5)", textAlign: "center", maxWidth: 380, lineHeight: 1.6 },
+        card: { width: "100%", background: "rgba(18,18,28,.8)", backdropFilter: "blur(20px)", border: "1px solid rgba(221,107,255,.12)", borderRadius: 20, padding: 28, display: "flex", flexDirection: "column", gap: 20 },
+        wPill: { display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 100, border: "1px solid rgba(221,107,255,.15)", background: "rgba(221,107,255,.04)", fontSize: 12, fontFamily: "'Space Mono',monospace", color: "rgba(232,228,240,.6)", cursor: "pointer" },
+        wDot: { width: 8, height: 8, borderRadius: "50%", background: "#50dc78", boxShadow: "0 0 8px rgba(80,220,120,.4)" },
+      };
+
+      const pillStyle = (on) => ({ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", background: on ? "rgba(80,220,120,.1)" : "rgba(255,107,107,.1)", color: on ? "#50dc78" : "#ff6b6b", border: `1px solid ${on ? "rgba(80,220,120,.2)" : "rgba(255,107,107,.2)"}` });
+      const dotStyle = (on) => ({ width: 6, height: 6, borderRadius: "50%", background: on ? "#50dc78" : "#ff6b6b", animation: on ? "pulse 2s infinite" : "none" });
+      const mintBtnStyle = (off) => ({ width: "100%", padding: "16px 24px", borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", cursor: off ? "not-allowed" : "pointer", background: off ? "rgba(221,107,255,.1)" : "linear-gradient(135deg,#dd6bff 0%,#8b5cf6 50%,#6b94ff 100%)", color: off ? "rgba(232,228,240,.3)" : "#fff", transition: "all .3s", boxShadow: off ? "none" : "0 4px 24px rgba(221,107,255,.25),0 0 0 1px rgba(221,107,255,.2)", fontFamily: "'Space Grotesk',sans-serif" });
+      const connectBtnStyle = { width: "100%", padding: "16px 24px", borderRadius: 14, border: "1px solid rgba(221,107,255,.3)", fontSize: 15, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", cursor: "pointer", background: "rgba(221,107,255,.08)", color: "#dd6bff", transition: "all .3s", fontFamily: "'Space Grotesk',sans-serif" };
+      const qBtnStyle = (off) => ({ width: 44, height: 44, borderRadius: 12, border: "1px solid rgba(221,107,255,.2)", background: off ? "rgba(221,107,255,.02)" : "rgba(221,107,255,.08)", color: off ? "rgba(232,228,240,.2)" : "#dd6bff", fontSize: 20, fontWeight: 700, cursor: off ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" });
+      const toastStyle = (t) => ({ width: "100%", padding: "12px 16px", borderRadius: 12, fontSize: 12, lineHeight: 1.5, fontFamily: "'Space Mono',monospace", background: t === "error" ? "rgba(255,107,107,.08)" : t === "success" ? "rgba(80,220,120,.08)" : "rgba(221,107,255,.06)", border: `1px solid ${t === "error" ? "rgba(255,107,107,.15)" : t === "success" ? "rgba(80,220,120,.15)" : "rgba(221,107,255,.1)"}`, color: t === "error" ? "#ff6b6b" : t === "success" ? "#50dc78" : "rgba(232,228,240,.5)", wordBreak: "break-all" });
+
+      return (
+        <div style={S.app}>
+          <div style={S.orb1} /><div style={S.orb2} /><div style={S.orb3} /><div style={S.grid} />
+          <div style={S.wrap}>
+            {/* Header */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 4 }} className="fi">
+              <div style={S.badge}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#dd6bff" strokeWidth="2" /><path d="M12 7v10M7 12h10" stroke="#dd6bff" strokeWidth="2" strokeLinecap="round" /></svg>
+                Push Chain Testnet
+              </div>
+              <h1 style={S.title}>{collName}</h1>
+              <p style={S.sub}>Mint your exclusive {collSymbol} NFT on Push Chain — the universal blockchain for apps.{maxSupply > 0 ? ` Limited to ${maxSupply} total supply.` : ""}</p>
+            </div>
+
+            {/* ═══ NFT PREVIEW CAROUSEL ═══ */}
+            <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: "12px 0" }} className="fi">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", paddingInline: 8 }}>
+                <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".12em", color: "rgba(232,228,240,.35)", fontWeight: 700 }}>Collection Preview</span>
+                <button onClick={() => setAutoPlay(p => !p)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 100, border: `1px solid ${autoPlay ? "rgba(80,220,120,0.2)" : "rgba(232,228,240,0.1)"}`, background: "transparent", fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Space Mono',monospace", color: autoPlay ? "#50dc78" : "rgba(232,228,240,0.3)" }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: autoPlay ? "#50dc78" : "rgba(232,228,240,0.3)" }} />
+                  {autoPlay ? "Auto" : "Paused"}
+                </button>
+              </div>
+              <div style={{ width: "100%", overflow: "hidden", padding: "8px 0" }}>
+                <div style={{ display: "flex", gap: 16, transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)", transform: `translateX(calc(50% - ${activeNft * 216}px - 100px))` }}>
+                  {NFT_PREVIEWS.map((nft, i) => <NFTCard key={nft.id} nft={nft} active={i === activeNft} onClick={() => { setActiveNft(i); setAutoPlay(false); }} maxSupply={maxSupply} />)}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center" }}>
+                {NFT_PREVIEWS.map((_, i) => (
+                  <button key={i} onClick={() => { setActiveNft(i); setAutoPlay(false); }}
+                    style={{ width: i === activeNft ? 24 : 8, height: 8, borderRadius: 100, border: "none", cursor: "pointer", transition: "all 0.3s",
+                      background: i === activeNft ? `linear-gradient(90deg, ${NFT_PREVIEWS[i].color1}, ${NFT_PREVIEWS[i].color2})` : "rgba(221,107,255,0.15)" }} />
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif" }}>{an.name}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: rarC }}>{an.rarity}</span>
+              </div>
+            </div>
+
+            {/* Wallet pill */}
+            {isConnected && (
+              <div style={S.wPill} className="fi" title={account}>
+                <div style={S.wDot} />
+                {trunc(account)}
+                {phase === 1 && <span style={{ marginLeft: 8, fontSize: 10, color: isWhitelisted ? "#50dc78" : "#ff6b6b", fontWeight: 700 }}>{isWhitelisted ? "✓ WL" : "✗ Not WL"}</span>}
+              </div>
+            )}
+
+            {/* ═══ MINT CARD ═══ */}
+            <div style={S.card} className="fi">
+              {/* Status row */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: 12, background: "rgba(221,107,255,.04)", border: "1px solid rgba(221,107,255,.08)" }}>
+                <div>
+                  <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(232,228,240,.4)", fontWeight: 600 }}>Phase</div>
+                  <div style={{ ...pillStyle(phase > 0), marginTop: 4 }}>
+                    <div style={dotStyle(phase > 0)} />
+                    {PHASE_NAMES[phase] || "PAUSED"}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(232,228,240,.4)", fontWeight: 600 }}>Minted</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#dd6bff", marginTop: 4 }}>{totalMinted}/{maxSupply}</div>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ width: "100%", height: 6, borderRadius: 100, background: "rgba(221,107,255,.08)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 100, background: "linear-gradient(90deg,#dd6bff,#6b94ff)", width: `${pct}%`, transition: "width 0.6s cubic-bezier(0.22,1,0.36,1)", boxShadow: "0 0 12px rgba(221,107,255,0.4)" }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "rgba(232,228,240,0.4)" }}>
+                  <span>{pct.toFixed(0)}% minted</span>
+                  <span>{supplyRemaining} remaining</span>
+                </div>
+              </div>
+
+              {/* Info grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {[["Price", currentPrice > 0 ? `${currentPrice} PC` : "—"], ["Max/Wallet", maxForPhase], ["You Minted", mintedForPhase], ["Can Mint", Math.max(0, remaining)]].map(([l, v]) => (
+                  <div key={l} style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(221,107,255,.03)", border: "1px solid rgba(221,107,255,.06)", display: "flex", flexDirection: "column", gap: 2 }}>
+                    <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(232,228,240,.3)" }}>{l}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Space Grotesk',sans-serif" }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quantity selector */}
+              {isConnected && phase > 0 && isWhitelisted && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20 }}>
+                  <button className="qty-btn" style={qBtnStyle(quantity <= 1)} disabled={quantity <= 1} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
+                  <div style={{ fontSize: 36, fontWeight: 800, fontFamily: "'Space Grotesk',sans-serif", minWidth: 60, textAlign: "center", background: "linear-gradient(135deg,#fff,#dd6bff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{quantity}</div>
+                  <button className="qty-btn" style={qBtnStyle(quantity >= maxQty)} disabled={quantity >= maxQty} onClick={() => setQuantity(q => Math.min(maxQty, q + 1))}>+</button>
+                </div>
+              )}
+
+              {/* Total cost */}
+              {isConnected && phase > 0 && isWhitelisted && currentPrice > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "1px solid rgba(221,107,255,0.06)", fontSize: 13 }}>
+                  <span style={{ color: "rgba(232,228,240,0.4)" }}>Total ({quantity} × {currentPrice} PC)</span>
+                  <span style={{ fontWeight: 700, fontFamily: "'Space Mono', monospace" }}>{(quantity * currentPrice).toFixed(4)} PC</span>
+                </div>
+              )}
+
+              {/* CTA buttons */}
+              {!account ? (
+                <button className="connect-btn" style={connectBtnStyle} onClick={connectWallet}>Connect Wallet</button>
+              ) : !chainOk ? (
+                <button className="connect-btn" style={connectBtnStyle} onClick={switchChain}>Switch to Push Chain</button>
+              ) : phase === 0 ? (
+                <button style={mintBtnStyle(true)} disabled>Sale Not Active</button>
+              ) : (
+                <button className="mint-btn" style={mintBtnStyle(!canMint || loading)} disabled={!canMint || loading} onClick={handleMint}>
+                  {loading ? "Minting..." : totalMinted >= maxSupply ? "Sold Out" : `Mint ${quantity} NFT${quantity > 1 ? "s" : ""}`}
+                </button>
+              )}
+
+              {/* Status message */}
+              {message && <div style={toastStyle(message.type)} className="fi">{message.text}</div>}
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap", justifyContent: "center", marginTop: 12 }} className="fi">
+              {[[EXPLORER, "Explorer"], [FAUCET, "Faucet"], [`${EXPLORER}/address/${COLLECTION}`, "Contract"], ["https://push.org/docs/", "Push Docs"]].map(([h, t]) => (
+                <a key={t} href={h} target="_blank" rel="noopener" className="footer-link" style={{ fontSize: 11, color: "rgba(232,228,240,.3)", textDecoration: "none", letterSpacing: ".06em", textTransform: "uppercase", transition: "color .2s", cursor: "pointer" }}>{t} ↗</a>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
