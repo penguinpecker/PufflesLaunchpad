@@ -772,6 +772,43 @@
       "artifacts": [
         "PufflesFaucet"
       ]
+    },
+    "/Users/penguinpecker/Documents/PufflesLaunchpad/contracts/PufflesFaucetV2.sol": {
+      "lastModificationDate": 1770913375375,
+      "contentHash": "9ff7d638b4c5b3816f0ce06e8a5f0d98",
+      "sourceName": "contracts/PufflesFaucetV2.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.22"
+      ],
+      "artifacts": [
+        "PufflesFaucetV2"
+      ]
     }
   }
 }

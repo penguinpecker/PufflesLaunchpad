@@ -40,7 +40,6 @@
     overflow-x: hidden;
   }
 
-  /* ═══ BACKGROUND ═══ */
   .bg-atmosphere {
     position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
   }
@@ -107,7 +106,7 @@
     font-family: 'Space Mono', monospace; font-size: 11px;
   }
 
-  /* ═══ MAIN CONTENT ═══ */
+  /* ═══ MAIN ═══ */
   .faucet-page {
     flex: 1; display: flex; flex-direction: column; align-items: center;
     justify-content: center; padding: 60px 20px;
@@ -121,51 +120,45 @@
     backdrop-filter: blur(10px);
   }
 
-  .faucet-header {
-    padding: 32px 32px 0;
-    text-align: center;
-  }
+  .faucet-header { padding: 32px 32px 0; text-align: center; }
   .faucet-icon { font-size: 48px; margin-bottom: 16px; }
   .faucet-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
   .faucet-title span { background: linear-gradient(135deg, var(--push-violet), var(--push-magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .faucet-subtitle { font-size: 14px; color: var(--push-text-dim); line-height: 1.5; }
 
+  .gasless-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 5px 12px; border-radius: 20px;
+    font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700;
+    color: var(--push-success); background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2); letter-spacing: 0.5px;
+  }
+  .gasless-badge::before { content: '⚡'; }
+
   .faucet-stats {
     display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px;
-    background: var(--push-border); margin: 28px 0 0;
+    background: var(--push-border); margin: 24px 0 0;
   }
-  .faucet-stat {
-    background: rgba(6, 2, 16, 0.6); padding: 16px;
-    text-align: center;
-  }
+  .faucet-stat { background: rgba(6, 2, 16, 0.6); padding: 16px; text-align: center; }
   .faucet-stat-label {
     font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
-    color: var(--push-text-muted); text-transform: uppercase; letter-spacing: 1px;
-    margin-bottom: 6px;
+    color: var(--push-text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
   }
-  .faucet-stat-value {
-    font-size: 18px; font-weight: 700; color: var(--push-text);
-  }
+  .faucet-stat-value { font-size: 18px; font-weight: 700; color: var(--push-text); }
   .faucet-stat-value.violet { color: var(--push-violet); }
 
   .faucet-body { padding: 28px 32px 32px; }
 
-  /* Wallet info when connected */
   .wallet-info {
     background: var(--push-surface); border: 1px solid var(--push-border);
-    border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;
-    display: none;
+    border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; display: none;
   }
   .wallet-info.show { display: block; }
-  .wallet-info-row {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 13px;
-  }
+  .wallet-info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
   .wallet-info-row + .wallet-info-row { margin-top: 10px; }
   .wallet-info-label { color: var(--push-text-muted); }
   .wallet-info-value { color: var(--push-text); font-family: 'Space Mono', monospace; font-size: 12px; }
 
-  /* Request button */
   .request-btn {
     width: 100%; padding: 16px; border-radius: var(--radius-sm);
     font-size: 16px; font-weight: 700; font-family: 'Outfit', sans-serif;
@@ -181,7 +174,14 @@
     border: 1px solid var(--push-border); box-shadow: none;
   }
 
-  /* Message */
+  .how-it-works {
+    margin-top: 16px; padding: 14px 16px;
+    background: var(--push-surface); border: 1px solid var(--push-border);
+    border-radius: var(--radius-sm); font-size: 12px; color: var(--push-text-muted);
+    line-height: 1.6;
+  }
+  .how-it-works strong { color: var(--push-text-dim); }
+
   .faucet-message {
     margin-top: 16px; padding: 12px 16px; border-radius: var(--radius-sm);
     font-size: 13px; text-align: center; display: none;
@@ -191,16 +191,13 @@
   .faucet-message.error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--push-error); }
   .faucet-message.info { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); color: var(--push-violet); }
 
-  /* Cooldown timer */
   .cooldown-timer {
     text-align: center; margin-top: 12px;
-    font-family: 'Space Mono', monospace; font-size: 12px; color: var(--push-text-muted);
-    display: none;
+    font-family: 'Space Mono', monospace; font-size: 12px; color: var(--push-text-muted); display: none;
   }
   .cooldown-timer.show { display: block; }
   .cooldown-timer .time { color: var(--push-violet); font-size: 14px; font-weight: 700; }
 
-  /* Footer */
   footer {
     border-top: 1px solid var(--push-border); padding: 24px 40px;
     display: flex; justify-content: space-between; align-items: center;
@@ -227,7 +224,6 @@
 
 <div class="app">
 
-  <!-- HEADER -->
   <header>
     <a class="logo" href="/">
       <div class="logo-icon">🐧</div>
@@ -240,13 +236,13 @@
     </div>
   </header>
 
-  <!-- FAUCET -->
   <main class="faucet-page">
     <div class="faucet-card">
       <div class="faucet-header">
         <div class="faucet-icon">🚰</div>
         <h1 class="faucet-title">Push Chain <span>Faucet</span></h1>
-        <p class="faucet-subtitle">Get free testnet PC tokens to explore the Puffles ecosystem. Connect your wallet and request tokens once every 24 hours.</p>
+        <p class="faucet-subtitle">Get free testnet PC tokens. Connect your wallet, sign a message, and receive tokens — no gas required.</p>
+        <div class="gasless-badge">GASLESS — NO GAS NEEDED</div>
 
         <div class="faucet-stats">
           <div class="faucet-stat">
@@ -285,11 +281,14 @@
         </div>
 
         <div class="faucet-message" id="faucet-message"></div>
+
+        <div class="how-it-works">
+          <strong>How it works:</strong> You sign a free message with MetaMask to prove wallet ownership. Our relay sends you 0.1 PC — you pay zero gas.
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- FOOTER -->
   <footer>
     <span>Puffles Faucet — Push Chain Testnet</span>
     <div class="footer-links">
@@ -306,18 +305,11 @@
 // CONFIG
 // ═══════════════════════════════════════════════════════
 const RPC = 'https://evm.donut.rpc.push.org/';
-const PUSH_CHAIN = {
-  chainId: '0xA465',  // 42101 decimal
-  chainName: 'Push Chain Testnet',
-  rpcUrls: ['https://evm.donut.rpc.push.org/'],
-  nativeCurrency: { name: 'Push Coin', symbol: 'PC', decimals: 18 },
-  blockExplorerUrls: ['https://donut.push.network']
-};
+const RELAY_URL = '/api/faucet';   // Cloudflare Pages Function
 
-// FAUCET CONTRACT — UPDATE THIS AFTER DEPLOYMENT
-const FAUCET_ADDRESS = '0xd277CfB5B927266482405b5bAE62d8f74e1908B8';
+// Faucet contract (read-only for stats/cooldown checks)
+const FAUCET_ADDRESS = '0x0376464A44d5A33D2C33DAaBa90aC14C78C00151';
 const FAUCET_ABI = [
-  'function request() external',
   'function dripAmount() view returns (uint256)',
   'function cooldown() view returns (uint256)',
   'function totalDrips() view returns (uint256)',
@@ -329,10 +321,8 @@ const FAUCET_ABI = [
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-let provider = null;
-let signer = null;
 let userAddress = null;
-let faucetContract = null;
+let browserProvider = null;
 let readProvider = null;
 let readFaucet = null;
 let cooldownInterval = null;
@@ -344,11 +334,8 @@ let isRequesting = false;
 
 async function handleWalletClick() {
   if (userAddress) {
-    // Disconnect
     userAddress = null;
-    signer = null;
-    provider = null;
-    faucetContract = null;
+    browserProvider = null;
     document.getElementById('wallet-btn').textContent = 'Connect Wallet';
     document.getElementById('wallet-btn').classList.remove('connected');
     document.getElementById('wallet-info').classList.remove('show');
@@ -361,83 +348,100 @@ async function handleWalletClick() {
   }
 
   if (typeof window.ethereum === 'undefined') {
-    showMessage('error', 'MetaMask not detected. Please install MetaMask to use the faucet.');
+    showMessage('error', 'MetaMask not detected. Please install MetaMask.');
     return;
   }
 
   try {
-    // Request accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     userAddress = accounts[0];
+    browserProvider = new ethers.BrowserProvider(window.ethereum);
 
-    // Ensure correct network
-    await switchToPushChain();
-
-    // Setup providers
-    provider = new ethers.BrowserProvider(window.ethereum);
-    signer = await provider.getSigner();
-    faucetContract = new ethers.Contract(FAUCET_ADDRESS, FAUCET_ABI, signer);
-
-    // Update UI
     const shortAddr = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
     document.getElementById('wallet-btn').textContent = shortAddr;
     document.getElementById('wallet-btn').classList.add('connected');
-
-    // Show wallet info
     document.getElementById('wallet-info').classList.add('show');
     document.getElementById('info-wallet').textContent = shortAddr;
 
-    // Fetch user balance
-    const balance = await provider.getBalance(userAddress);
+    // Get balance via read provider (works regardless of connected chain)
+    const balance = await readProvider.getBalance(userAddress);
     document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
 
-    // Check cooldown and update button
     await updateCooldownState();
 
-    // Listen for account/chain changes
-    window.ethereum.on('accountsChanged', handleAccountChange);
-    window.ethereum.on('chainChanged', () => window.location.reload());
+    window.ethereum.on('accountsChanged', (accs) => {
+      if (accs.length === 0) handleWalletClick();
+      else window.location.reload();
+    });
 
   } catch (e) {
     console.error('Wallet connection failed:', e);
-    if (e.code === 4001) {
-      showMessage('info', 'Connection request cancelled.');
-    } else {
-      showMessage('error', 'Failed to connect wallet: ' + (e.message || 'Unknown error'));
-    }
-  }
-}
-
-async function switchToPushChain() {
-  try {
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: PUSH_CHAIN.chainId }]
-    });
-  } catch (switchError) {
-    // Chain not added yet — add it
-    if (switchError.code === 4902) {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [PUSH_CHAIN]
-      });
-    } else {
-      throw switchError;
-    }
-  }
-}
-
-function handleAccountChange(accounts) {
-  if (accounts.length === 0) {
-    // Disconnected
-    handleWalletClick();
-  } else {
-    window.location.reload();
+    if (e.code === 4001) showMessage('info', 'Connection cancelled.');
+    else showMessage('error', 'Failed to connect: ' + (e.message || 'Unknown error'));
   }
 }
 
 // ═══════════════════════════════════════════════════════
-// FAUCET LOGIC
+// GASLESS REQUEST
+// ═══════════════════════════════════════════════════════
+
+async function handleRequest() {
+  if (!userAddress || isRequesting) return;
+
+  isRequesting = true;
+  const btn = document.getElementById('request-btn');
+  btn.textContent = 'Sign Message in MetaMask...';
+  btn.disabled = true;
+  hideMessage();
+
+  try {
+    // Step 1: Sign a message (FREE — no gas)
+    const signer = await browserProvider.getSigner();
+    const message = `Puffles Faucet: Request PC for ${userAddress.toLowerCase()}`;
+    const signature = await signer.signMessage(message);
+
+    btn.textContent = 'Sending via relay...';
+    showMessage('info', 'Signature verified. Relay processing your request...');
+
+    // Step 2: Send to relay backend
+    const response = await fetch(RELAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: userAddress, signature, message })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Relay request failed');
+    }
+
+    // Success!
+    const shortTx = data.txHash.slice(0, 18) + '...';
+    showMessage('success', `You received 0.1 PC! Tx: ${shortTx}`);
+
+    // Refresh balance and stats
+    const balance = await readProvider.getBalance(userAddress);
+    document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
+    await loadFaucetStats();
+    await updateCooldownState();
+
+  } catch (e) {
+    console.error('Request failed:', e);
+    let msg = e.message || 'Request failed';
+    if (msg.includes('user rejected') || msg.includes('User denied')) {
+      msg = 'Signature cancelled.';
+    }
+    showMessage('error', msg.length > 120 ? msg.slice(0, 120) + '...' : msg);
+    btn.textContent = 'Request 0.1 PC';
+    btn.disabled = false;
+  }
+
+  isRequesting = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// COOLDOWN
 // ═══════════════════════════════════════════════════════
 
 async function updateCooldownState() {
@@ -446,7 +450,6 @@ async function updateCooldownState() {
   try {
     const remaining = await readFaucet.timeUntilNextRequest(userAddress);
     const seconds = Number(remaining);
-
     const btn = document.getElementById('request-btn');
 
     if (seconds > 0) {
@@ -470,7 +473,6 @@ async function updateCooldownState() {
 
 function startCooldownTimer(seconds) {
   if (cooldownInterval) clearInterval(cooldownInterval);
-
   let remaining = seconds;
   const timerEl = document.getElementById('cooldown-timer');
   const timeEl = document.getElementById('cooldown-time');
@@ -492,61 +494,12 @@ function startCooldownTimer(seconds) {
     timeEl.textContent = `${h}h ${m}m ${s}s`;
     remaining--;
   }
-
   update();
   cooldownInterval = setInterval(update, 1000);
 }
 
-async function handleRequest() {
-  if (!userAddress || isRequesting) return;
-
-  isRequesting = true;
-  const btn = document.getElementById('request-btn');
-  btn.textContent = 'Requesting...';
-  btn.disabled = true;
-  hideMessage();
-
-  try {
-    const tx = await faucetContract.request();
-    showMessage('info', 'Transaction sent: ' + tx.hash.slice(0, 14) + '...');
-    await tx.wait();
-    showMessage('success', 'You received 0.1 PC! Tx: ' + tx.hash.slice(0, 18) + '...');
-
-    // Update balance
-    const balance = await provider.getBalance(userAddress);
-    document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
-
-    // Refresh stats
-    await loadFaucetStats();
-
-    // Start cooldown
-    await updateCooldownState();
-
-  } catch (e) {
-    console.error('Request failed:', e);
-    let msg = 'Transaction failed';
-    if (e.reason) msg = e.reason;
-    else if (e.message) {
-      if (e.message.includes('CooldownActive')) {
-        msg = 'Cooldown still active. Please wait.';
-      } else if (e.message.includes('InsufficientBalance')) {
-        msg = 'Faucet is empty. Please try again later.';
-      } else if (e.message.includes('user rejected')) {
-        msg = 'Transaction cancelled.';
-      } else {
-        msg = e.message.length > 100 ? e.message.slice(0, 100) + '...' : e.message;
-      }
-    }
-    showMessage('error', msg);
-    btn.textContent = 'Request 0.1 PC';
-    btn.disabled = false;
-  }
-
-  isRequesting = false;
-}
-
 // ═══════════════════════════════════════════════════════
-// STATS
+// STATS (read-only, no wallet needed)
 // ═══════════════════════════════════════════════════════
 
 async function loadFaucetStats() {
@@ -556,12 +509,11 @@ async function loadFaucetStats() {
       readProvider.getBalance(FAUCET_ADDRESS),
       readFaucet.totalDrips()
     ]);
-
     document.getElementById('stat-drip').textContent = parseFloat(ethers.formatEther(dripAmount)).toFixed(2) + ' PC';
     document.getElementById('stat-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(2) + ' PC';
     document.getElementById('stat-drips').textContent = Number(totalDrips).toLocaleString();
   } catch (e) {
-    console.error('Failed to load faucet stats:', e);
+    console.error('Stats load failed:', e);
   }
 }
 
@@ -574,10 +526,8 @@ function showMessage(type, text) {
   el.className = 'faucet-message show ' + type;
   el.textContent = text;
 }
-
 function hideMessage() {
-  const el = document.getElementById('faucet-message');
-  el.className = 'faucet-message';
+  document.getElementById('faucet-message').className = 'faucet-message';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -585,23 +535,18 @@ function hideMessage() {
 // ═══════════════════════════════════════════════════════
 
 async function init() {
-  // Read-only provider for stats
   readProvider = new ethers.JsonRpcProvider(RPC);
   readFaucet = new ethers.Contract(FAUCET_ADDRESS, FAUCET_ABI, readProvider);
 
-  // Load faucet stats
   await loadFaucetStats();
 
-  // Auto-connect if already authorized
+  // Auto-reconnect if already authorized
   if (window.ethereum) {
     try {
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
       if (accounts.length > 0) {
-        // Silently reconnect
         userAddress = accounts[0];
-        provider = new ethers.BrowserProvider(window.ethereum);
-        signer = await provider.getSigner();
-        faucetContract = new ethers.Contract(FAUCET_ADDRESS, FAUCET_ABI, signer);
+        browserProvider = new ethers.BrowserProvider(window.ethereum);
 
         const shortAddr = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
         document.getElementById('wallet-btn').textContent = shortAddr;
@@ -609,20 +554,19 @@ async function init() {
         document.getElementById('wallet-info').classList.add('show');
         document.getElementById('info-wallet').textContent = shortAddr;
 
-        const balance = await provider.getBalance(userAddress);
+        const balance = await readProvider.getBalance(userAddress);
         document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
 
         await updateCooldownState();
 
-        window.ethereum.on('accountsChanged', handleAccountChange);
-        window.ethereum.on('chainChanged', () => window.location.reload());
+        window.ethereum.on('accountsChanged', (accs) => {
+          if (accs.length === 0) handleWalletClick();
+          else window.location.reload();
+        });
       }
-    } catch (e) {
-      console.log('Auto-connect skipped');
-    }
+    } catch (e) { console.log('Auto-connect skipped'); }
   }
 
-  // Refresh stats every 30s
   setInterval(loadFaucetStats, 30000);
 }
 
