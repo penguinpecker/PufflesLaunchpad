@@ -418,7 +418,7 @@ async function handleRequest() {
 
     // Success!
     const shortTx = data.txHash.slice(0, 18) + '...';
-    showMessage('success', `You received 0.1 PC! <a href="https://explorer.push.org/tx/${data.txHash}" target="_blank" style="color:inherit;text-decoration:underline">View transaction ↗</a>`);
+    showMessage('success', `You received 0.1 PC! <a href="https://donut.push.network/tx/${data.txHash}" target="_blank" style="color:inherit;text-decoration:underline">View transaction ↗</a>`);
 
     // Refresh balance and stats
     const balance = await readProvider.getBalance(userAddress);
