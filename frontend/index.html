@@ -347,7 +347,6 @@
     </div>
     <div class="header-right">
       <div class="chain-badge"><div class="chain-dot"></div>Push Chain Testnet</div>
-      <button class="wallet-btn" id="wallet-btn" onclick="handleWalletClick()">Connect Wallet</button>
     </div>
   </header>
 
@@ -381,95 +380,7 @@
     </section>
   </div>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!--              MINT VIEW                     -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div id="view-mint" class="hidden">
-    <div class="mint-page">
-      <button class="mint-back" onclick="navigateTo('portfolio')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        Back to Collections
-      </button>
 
-      <div class="mint-card">
-        <div class="mint-banner">
-          <div class="mint-banner-emoji">🐧</div>
-          <div id="mint-status-badge"></div>
-        </div>
-
-        <div class="mint-body">
-          <div class="mint-title" id="mint-name">Loading...</div>
-          <div class="mint-symbol" id="mint-symbol">...</div>
-
-          <div class="mint-info-grid">
-            <div class="mint-info-item">
-              <div class="mint-info-label">Price</div>
-              <div class="mint-info-value highlight" id="mint-price">—</div>
-            </div>
-            <div class="mint-info-item">
-              <div class="mint-info-label">Stage</div>
-              <div class="mint-info-value" id="mint-stage">—</div>
-            </div>
-            <div class="mint-info-item">
-              <div class="mint-info-label">Per Wallet</div>
-              <div class="mint-info-value" id="mint-per-wallet">—</div>
-            </div>
-            <div class="mint-info-item">
-              <div class="mint-info-label">Per TX</div>
-              <div class="mint-info-value" id="mint-per-tx">—</div>
-            </div>
-          </div>
-
-          <div class="mint-progress-section">
-            <div class="progress-header">
-              <span class="progress-label">Minted</span>
-              <span class="progress-nums" id="mint-supply-text">— / —</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="mint-progress-fill" style="width:0%"></div>
-            </div>
-            <div class="progress-pct" id="mint-pct">0%</div>
-          </div>
-
-          <div class="qty-section">
-            <div class="qty-label">Quantity</div>
-            <div class="qty-controls">
-              <button class="qty-btn" id="qty-minus" onclick="changeQty(-1)">−</button>
-              <div class="qty-display" id="qty-display">1</div>
-              <button class="qty-btn" id="qty-plus" onclick="changeQty(1)">+</button>
-              <div class="qty-max" id="qty-max-label">Max: —</div>
-            </div>
-          </div>
-
-          <div class="mint-total">
-            <span class="mint-total-label">Total</span>
-            <span class="mint-total-value" id="mint-total-cost">— ETH</span>
-          </div>
-
-          <button class="mint-action-btn" id="mint-action-btn" onclick="handleMintClick()">Connect Wallet</button>
-
-          <div id="mint-message" class="hidden"></div>
-
-          <div class="mint-user-info" id="mint-user-info" style="display:none">
-            <div class="mint-info-item">
-              <div class="mint-info-label">You Minted</div>
-              <div class="mint-info-value" id="mint-user-minted">0</div>
-            </div>
-            <div class="mint-info-item">
-              <div class="mint-info-label">Remaining</div>
-              <div class="mint-info-value" id="mint-user-remaining">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mint-footer-links">
-        <a id="link-explorer" href="#" target="_blank" class="mint-footer-link">Explorer ↗</a>
-        <a href="https://donut.faucet.push.org/" target="_blank" class="mint-footer-link">Faucet ↗</a>
-        <a id="link-contract" href="#" target="_blank" class="mint-footer-link">Contract ↗</a>
-      </div>
-    </div>
-  </div>
 
   <footer>
     <div>Built with 🐧 by <a href="#">Puffles</a> — powered by <a href="https://push.org" target="_blank">Push Chain</a></div>
@@ -486,8 +397,6 @@
 // CONFIG
 // ═══════════════════════════════════════════════════════
 const PUSH_RPC = 'https://evm.donut.rpc.push.org/';
-const CHAIN_ID = 42101;
-const CHAIN_ID_HEX = '0xA465';
 const PUFFLECALL_ADDRESS = '0x27D910BdBCAA3A283B5EDe98f3edfC82324FD63F';
 const FACTORY_ADDRESS = '0x6DB965f96D35853Ea7642D77ed945897447aD5b4';
 const EXPLORER = 'https://donut.push.network';
@@ -509,14 +418,7 @@ const NFT_ABI = [
   'function salePhase() view returns (uint8)',
   'function whitelistPrice() view returns (uint256)',
   'function publicPrice() view returns (uint256)',
-  'function maxPerWalletWL() view returns (uint256)',
   'function maxPerWalletPublic() view returns (uint256)',
-  'function maxPerTx() view returns (uint256)',
-  'function whitelistMinted(address) view returns (uint256)',
-  'function publicMinted(address) view returns (uint256)',
-  'function merkleRoot() view returns (bytes32)',
-  'function mint(uint256 quantity) payable',
-  'function whitelistMint(uint256 quantity, bytes32[] proof) payable',
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -526,15 +428,6 @@ let collectionAddresses = [];
 let collectionData = [];
 let activeFilter = 'all';
 let provider, puffleCall, nftIface, factoryIface;
-let currentView = 'portfolio';
-let mintAddress = null;
-let mintData = {};
-let mintQty = 1;
-let walletAddress = null;
-let walletSigner = null;
-let walletChainOk = false;
-let mintLoading = false;
-let mintPollTimer = null;
 
 // ═══════════════════════════════════════════════════════
 // INIT
@@ -546,30 +439,6 @@ async function init() {
   factoryIface = new ethers.Interface(FACTORY_ABI);
 
   setupFilters();
-  handleHashChange();
-  window.addEventListener('hashchange', handleHashChange);
-
-  // Check if wallet already connected
-  if (window.ethereum) {
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if (accounts.length > 0) {
-      walletAddress = accounts[0];
-      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      walletChainOk = parseInt(chainId, 16) === CHAIN_ID;
-      updateWalletBtn();
-    }
-    window.ethereum.on('accountsChanged', (accounts) => {
-      walletAddress = accounts[0] || null;
-      updateWalletBtn();
-      if (currentView === 'mint') fetchMintUserData();
-    });
-    window.ethereum.on('chainChanged', (chainId) => {
-      walletChainOk = parseInt(chainId, 16) === CHAIN_ID;
-      updateWalletBtn();
-      if (currentView === 'mint') updateMintButton();
-    });
-  }
-
   await discoverCollections();
   await fetchAllData();
   renderCards();
@@ -578,7 +447,7 @@ async function init() {
     try {
       await discoverCollections();
       await fetchAllData();
-      if (currentView === 'portfolio') renderCards();
+      renderCards();
     } catch (e) { console.warn('Poll error:', e); }
   }, POLL_INTERVAL);
 }
@@ -588,87 +457,13 @@ async function init() {
 // ═══════════════════════════════════════════════════════
 function navigateTo(view, addr) {
   if (view === 'mint' && addr) {
-    window.location.hash = '#/mint/' + addr;
-  } else {
-    window.location.hash = '#/';
+    window.open('mint.html?collection=' + addr, '_blank');
   }
 }
 
-function handleHashChange() {
-  const hash = window.location.hash;
-  if (hash.startsWith('#/mint/')) {
-    const addr = hash.replace('#/mint/', '');
-    showMintView(addr);
-  } else {
-    showPortfolioView();
-  }
-}
+// Navigation handled by page links
 
-function showPortfolioView() {
-  currentView = 'portfolio';
-  document.getElementById('view-portfolio').classList.remove('hidden');
-  document.getElementById('view-mint').classList.add('hidden');
-  if (mintPollTimer) { clearInterval(mintPollTimer); mintPollTimer = null; }
-  renderCards();
-  window.scrollTo(0, 0);
-}
-
-function showMintView(addr) {
-  currentView = 'mint';
-  mintAddress = addr;
-  mintQty = 1;
-  document.getElementById('view-portfolio').classList.add('hidden');
-  document.getElementById('view-mint').classList.remove('hidden');
-  window.scrollTo(0, 0);
-
-  // Set links
-  document.getElementById('link-explorer').href = EXPLORER + '/address/' + addr;
-  document.getElementById('link-contract').href = EXPLORER + '/address/' + addr;
-
-  // Load data
-  fetchMintData();
-  mintPollTimer = setInterval(fetchMintData, POLL_INTERVAL);
-}
-
-// ═══════════════════════════════════════════════════════
-// WALLET
-// ═══════════════════════════════════════════════════════
-async function handleWalletClick() {
-  if (!window.ethereum) { alert('Please install MetaMask!'); return; }
-  if (walletAddress) return; // already connected
-  try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    walletAddress = accounts[0];
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    walletChainOk = parseInt(chainId, 16) === CHAIN_ID;
-    updateWalletBtn();
-    if (currentView === 'mint') { fetchMintUserData(); updateMintButton(); }
-  } catch (e) { console.error('Wallet connect failed:', e); }
-}
-
-async function switchChain() {
-  try {
-    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID_HEX }] });
-  } catch (e) {
-    if (e.code === 4902) {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [{ chainId: CHAIN_ID_HEX, chainName: 'Push Chain Testnet', rpcUrls: [PUSH_RPC], nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, blockExplorerUrls: [EXPLORER] }],
-      });
-    }
-  }
-}
-
-function updateWalletBtn() {
-  const btn = document.getElementById('wallet-btn');
-  if (walletAddress) {
-    btn.textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-    btn.classList.add('connected');
-  } else {
-    btn.textContent = 'Connect Wallet';
-    btn.classList.remove('connected');
-  }
-}
+// Wallet handled on mint page
 
 // ═══════════════════════════════════════════════════════
 // FACTORY DISCOVERY
@@ -717,8 +512,10 @@ async function fetchAllData() {
       const d = (idx, t) => { try { return results[o+idx].success ? dec.decode([t], results[o+idx].returnData)[0] : null; } catch { return null; } };
       const name = d(0,'string') || 'Unknown';
       const symbol = d(1,'string') || '???';
-      const totalSupply = Number(d(2,'uint256') || 0n);
+      let totalSupply = Number(d(2,'uint256') || 0n);
       const maxSupply = Number(d(3,'uint256') || 0n);
+      // ERC721A clone overflow: _currentIndex=0, _startTokenId=1 → underflow to 2^256-1
+      if (totalSupply > maxSupply || totalSupply > 1e18) totalSupply = 0;
       const salePhase = Number(d(4,'uint8') || 0);
       const publicPrice = d(5,'uint256');
       const wlPrice = d(6,'uint256');
@@ -770,223 +567,10 @@ function renderCards() {
       '<div class="card-body">' +
         '<div class="card-header"><div class="card-name">' + esc(col.name) + '</div><div class="card-symbol">' + esc(col.symbol) + '</div></div>' +
         '<div class="mint-progress"><div class="progress-header"><span class="progress-label">Minted</span><span class="progress-nums">' + col.totalSupply.toLocaleString() + ' / ' + col.maxSupply.toLocaleString() + '</span></div><div class="progress-bar"><div class="progress-fill ' + (isFull?'full':'') + '" style="width:' + pct + '%"></div></div><div class="progress-pct">' + pct + '%</div></div>' +
-        '<div class="card-details"><div class="detail"><div class="detail-label">Price</div><div class="detail-value price">' + col.currentPrice + ' ETH</div></div><div class="detail"><div class="detail-label">Per Wallet</div><div class="detail-value">' + (col.maxPerWallet||'—') + '</div></div><div class="detail"><div class="detail-label">Stage</div><div class="detail-value">' + col.phaseLabel + '</div></div></div>' +
+        '<div class="card-details"><div class="detail"><div class="detail-label">Price</div><div class="detail-value price">' + col.currentPrice + ' PC</div></div><div class="detail"><div class="detail-label">Per Wallet</div><div class="detail-value">' + (col.maxPerWallet||'—') + '</div></div><div class="detail"><div class="detail-label">Stage</div><div class="detail-value">' + col.phaseLabel + '</div></div></div>' +
       '</div>' +
       '<div class="card-footer"><span class="card-mint-label">Mint →</span><span class="card-contract">' + shortAddr + '</span></div></div>';
   }).join('');
-}
-
-// ═══════════════════════════════════════════════════════
-// MINT PAGE DATA
-// ═══════════════════════════════════════════════════════
-async function fetchMintData() {
-  if (!mintAddress) return;
-  const CALLS = 10;
-  const calls = [
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('name') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('symbol') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('totalSupply') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('maxSupply') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('salePhase') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('publicPrice') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('whitelistPrice') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('maxPerWalletPublic') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('maxPerWalletWL') },
-    { target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData('maxPerTx') },
-  ];
-
-  try {
-    const results = await puffleCall.aggregate3.staticCall(calls);
-    const dec = ethers.AbiCoder.defaultAbiCoder();
-    const d = (idx, t) => { try { return results[idx].success ? dec.decode([t], results[idx].returnData)[0] : null; } catch { return null; } };
-
-    mintData = {
-      name: d(0,'string') || 'Unknown',
-      symbol: d(1,'string') || '???',
-      totalSupply: Number(d(2,'uint256') || 0n),
-      maxSupply: Number(d(3,'uint256') || 0n),
-      salePhase: Number(d(4,'uint8') || 0),
-      publicPrice: d(5,'uint256') || 0n,
-      wlPrice: d(6,'uint256') || 0n,
-      maxPerWalletPublic: Number(d(7,'uint256') || 0),
-      maxPerWalletWL: Number(d(8,'uint256') || 0),
-      maxPerTx: Number(d(9,'uint256') || 0),
-    };
-
-    mintData.phaseLabel = ['Paused','Whitelist','Public'][mintData.salePhase] || '?';
-    mintData.currentPriceWei = mintData.salePhase === 1 ? mintData.wlPrice : mintData.publicPrice;
-    mintData.currentPrice = ethers.formatEther(mintData.currentPriceWei);
-    mintData.maxPerWallet = mintData.salePhase === 1 ? mintData.maxPerWalletWL : mintData.maxPerWalletPublic;
-    mintData.isSoldOut = mintData.totalSupply >= mintData.maxSupply && mintData.maxSupply > 0;
-    mintData.pct = mintData.maxSupply > 0 ? (mintData.totalSupply / mintData.maxSupply * 100) : 0;
-
-    renderMintPage();
-    if (walletAddress) fetchMintUserData();
-  } catch (e) { console.warn('Mint data fetch:', e); }
-}
-
-async function fetchMintUserData() {
-  if (!walletAddress || !mintAddress) return;
-  const phase = mintData.salePhase;
-  const mintedFn = phase === 1 ? 'whitelistMinted' : 'publicMinted';
-  const calls = [{ target: mintAddress, allowFailure: true, callData: nftIface.encodeFunctionData(mintedFn, [walletAddress]) }];
-
-  try {
-    const results = await puffleCall.aggregate3.staticCall(calls);
-    const dec = ethers.AbiCoder.defaultAbiCoder();
-    const userMinted = results[0].success ? Number(dec.decode(['uint256'], results[0].returnData)[0]) : 0;
-    mintData.userMinted = userMinted;
-    mintData.userRemaining = Math.max(0, mintData.maxPerWallet - userMinted);
-
-    document.getElementById('mint-user-info').style.display = 'grid';
-    document.getElementById('mint-user-minted').textContent = userMinted;
-    document.getElementById('mint-user-remaining').textContent = mintData.userRemaining;
-
-    // Clamp qty
-    if (mintQty > mintData.userRemaining && mintData.userRemaining > 0) { mintQty = mintData.userRemaining; }
-    if (mintData.userRemaining === 0) mintQty = 0;
-    updateQtyDisplay();
-    updateMintButton();
-  } catch (e) { console.warn('User data:', e); }
-}
-
-// ═══════════════════════════════════════════════════════
-// MINT PAGE RENDER
-// ═══════════════════════════════════════════════════════
-function renderMintPage() {
-  const m = mintData;
-  document.getElementById('mint-name').textContent = m.name;
-  document.getElementById('mint-symbol').textContent = '$' + m.symbol;
-  document.getElementById('mint-price').textContent = m.currentPrice + ' ETH';
-  document.getElementById('mint-stage').textContent = m.phaseLabel;
-  document.getElementById('mint-per-wallet').textContent = m.maxPerWallet || '—';
-  document.getElementById('mint-per-tx').textContent = m.maxPerTx || '—';
-  document.getElementById('mint-supply-text').textContent = m.totalSupply.toLocaleString() + ' / ' + m.maxSupply.toLocaleString();
-  document.getElementById('mint-progress-fill').style.width = m.pct.toFixed(1) + '%';
-  document.getElementById('mint-progress-fill').className = 'progress-fill' + (m.isSoldOut ? ' full' : '');
-  document.getElementById('mint-pct').textContent = m.pct.toFixed(1) + '%';
-  document.getElementById('qty-max-label').textContent = 'Max: ' + m.maxPerTx;
-
-  let badgeHTML = '';
-  if (m.isSoldOut) badgeHTML = '<div class="card-status status-minted">Minted Out</div>';
-  else if (m.salePhase >= 1) badgeHTML = '<div class="card-status status-live">Live · ' + m.phaseLabel + '</div>';
-  else if (m.salePhase === 0 && m.totalSupply === 0) badgeHTML = '<div class="card-status status-upcoming">Upcoming</div>';
-  else badgeHTML = '<div class="card-status status-paused">Paused</div>';
-  document.getElementById('mint-status-badge').innerHTML = badgeHTML;
-
-  updateQtyDisplay();
-  updateMintButton();
-}
-
-// ═══════════════════════════════════════════════════════
-// QUANTITY
-// ═══════════════════════════════════════════════════════
-function changeQty(delta) {
-  const maxTx = mintData.maxPerTx || 1;
-  const maxRemaining = mintData.userRemaining !== undefined ? mintData.userRemaining : maxTx;
-  const remaining = mintData.maxSupply - mintData.totalSupply;
-  const effectiveMax = Math.min(maxTx, maxRemaining, remaining);
-  mintQty = Math.max(1, Math.min(effectiveMax, mintQty + delta));
-  updateQtyDisplay();
-}
-
-function updateQtyDisplay() {
-  document.getElementById('qty-display').textContent = mintQty;
-  const totalCost = mintData.currentPriceWei ? ethers.formatEther(mintData.currentPriceWei * BigInt(mintQty)) : '—';
-  document.getElementById('mint-total-cost').textContent = totalCost + ' ETH';
-}
-
-// ═══════════════════════════════════════════════════════
-// MINT BUTTON STATE
-// ═══════════════════════════════════════════════════════
-function updateMintButton() {
-  const btn = document.getElementById('mint-action-btn');
-  btn.className = 'mint-action-btn';
-
-  if (!walletAddress) {
-    btn.textContent = 'Connect Wallet';
-    btn.classList.add('connect');
-    btn.disabled = false;
-  } else if (!walletChainOk) {
-    btn.textContent = 'Switch to Push Chain';
-    btn.classList.add('switch');
-    btn.disabled = false;
-  } else if (mintData.isSoldOut) {
-    btn.textContent = 'Sold Out';
-    btn.classList.add('sold-out');
-    btn.disabled = true;
-  } else if (mintData.salePhase === 0) {
-    btn.textContent = 'Sale Not Active';
-    btn.classList.add('inactive');
-    btn.disabled = true;
-  } else if (mintData.userRemaining === 0) {
-    btn.textContent = 'Wallet Limit Reached';
-    btn.classList.add('inactive');
-    btn.disabled = true;
-  } else if (mintLoading) {
-    btn.textContent = 'Minting...';
-    btn.classList.add('mint-go');
-    btn.disabled = true;
-  } else {
-    btn.textContent = 'Mint ' + mintQty + ' NFT' + (mintQty > 1 ? 's' : '');
-    btn.classList.add('mint-go');
-    btn.disabled = false;
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-// MINT ACTION
-// ═══════════════════════════════════════════════════════
-async function handleMintClick() {
-  if (!walletAddress) { handleWalletClick(); return; }
-  if (!walletChainOk) { switchChain(); return; }
-  if (mintData.isSoldOut || mintData.salePhase === 0 || mintData.userRemaining === 0) return;
-
-  mintLoading = true;
-  updateMintButton();
-  hideMintMessage();
-
-  try {
-    const browserProvider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await browserProvider.getSigner();
-    const nftContract = new ethers.Contract(mintAddress, NFT_ABI, signer);
-    const value = mintData.currentPriceWei * BigInt(mintQty);
-
-    let tx;
-    if (mintData.salePhase === 1) {
-      // Whitelist mint — for now pass empty proof (user would need actual proof)
-      showMintMessage('info', 'Whitelist mint requires a Merkle proof. Contact the collection owner for your proof.');
-      mintLoading = false;
-      updateMintButton();
-      return;
-    } else {
-      tx = await nftContract.mint(mintQty, { value });
-    }
-
-    showMintMessage('info', 'Transaction sent: ' + tx.hash.slice(0, 10) + '...');
-    await tx.wait();
-    showMintMessage('success', 'Minted ' + mintQty + ' NFT' + (mintQty > 1 ? 's' : '') + '! Tx: ' + tx.hash.slice(0, 16) + '...');
-
-    // Refresh data
-    await fetchMintData();
-  } catch (e) {
-    console.error('Mint failed:', e);
-    const msg = e.reason || e.message || 'Transaction failed';
-    showMintMessage('error', msg.length > 120 ? msg.slice(0, 120) + '...' : msg);
-  }
-
-  mintLoading = false;
-  updateMintButton();
-}
-
-function showMintMessage(type, text) {
-  const el = document.getElementById('mint-message');
-  el.className = 'mint-message ' + type;
-  el.textContent = text;
-  el.classList.remove('hidden');
-}
-function hideMintMessage() {
-  document.getElementById('mint-message').classList.add('hidden');
 }
 
 // ═══════════════════════════════════════════════════════
