@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puffles Faucet — Get Testnet PC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<style>
+  :root {
+    --push-violet: #8B5CF6;
+    --push-purple: #7C3AED;
+    --push-deep: #4C1D95;
+    --push-pink: #DD2476;
+    --push-magenta: #C026D3;
+    --push-dark: #0B0514;
+    --push-darker: #060210;
+    --push-surface: rgba(139, 92, 246, 0.06);
+    --push-surface-hover: rgba(139, 92, 246, 0.12);
+    --push-border: rgba(139, 92, 246, 0.15);
+    --push-border-bright: rgba(139, 92, 246, 0.3);
+    --push-text: #E8E0F5;
+    --push-text-dim: #9B8AB8;
+    --push-text-muted: #6B5A85;
+    --push-success: #10B981;
+    --push-warning: #F59E0B;
+    --push-error: #EF4444;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--push-darker);
+    color: var(--push-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ═══ BACKGROUND ═══ */
+  .bg-atmosphere {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .bg-atmosphere::before {
+    content: '';
+    position: absolute;
+    top: -40%; left: -20%; width: 80%; height: 80%;
+    background: radial-gradient(ellipse, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+    animation: drift 25s ease-in-out infinite alternate;
+  }
+  .bg-atmosphere::after {
+    content: '';
+    position: absolute;
+    bottom: -30%; right: -15%; width: 70%; height: 70%;
+    background: radial-gradient(ellipse, rgba(221, 36, 118, 0.06) 0%, transparent 70%);
+    animation: drift 20s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes drift { from { transform: translate(0,0) rotate(0deg); } to { transform: translate(60px,40px) rotate(3deg); } }
+
+  .noise {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  }
+
+  .app { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ═══ HEADER ═══ */
+  header {
+    padding: 20px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--push-border);
+    backdrop-filter: blur(20px);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6, 2, 16, 0.85);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; }
+  .logo-icon { font-size: 28px; }
+  .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--push-text); }
+  .logo-tag {
+    font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
+    color: var(--push-violet); background: rgba(139,92,246,0.1);
+    padding: 3px 8px; border-radius: 4px; letter-spacing: 1.5px;
+    border: 1px solid rgba(139,92,246,0.2);
+  }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .chain-badge {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    color: var(--push-text-dim); display: flex; align-items: center; gap: 8px;
+    background: var(--push-surface); padding: 8px 14px; border-radius: 8px;
+    border: 1px solid var(--push-border);
+  }
+  .chain-dot { width: 6px; height: 6px; background: var(--push-success); border-radius: 50%; box-shadow: 0 0 8px rgba(16,185,129,0.6); }
+
+  .wallet-btn {
+    padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+    font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.3s;
+    background: linear-gradient(135deg, var(--push-purple), var(--push-magenta));
+    color: #fff; border: none; box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+  }
+  .wallet-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(124,58,237,0.45); }
+  .wallet-btn.connected {
+    background: var(--push-surface); color: var(--push-text-dim);
+    border: 1px solid var(--push-border); box-shadow: none;
+    font-family: 'Space Mono', monospace; font-size: 11px;
+  }
+
+  /* ═══ MAIN CONTENT ═══ */
+  .faucet-page {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 60px 20px;
+  }
+
+  .faucet-card {
+    width: 100%; max-width: 460px;
+    background: rgba(139, 92, 246, 0.04);
+    border: 1px solid var(--push-border);
+    border-radius: 20px; overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .faucet-header {
+    padding: 32px 32px 0;
+    text-align: center;
+  }
+  .faucet-icon { font-size: 48px; margin-bottom: 16px; }
+  .faucet-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .faucet-title span { background: linear-gradient(135deg, var(--push-violet), var(--push-magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .faucet-subtitle { font-size: 14px; color: var(--push-text-dim); line-height: 1.5; }
+
+  .faucet-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px;
+    background: var(--push-border); margin: 28px 0 0;
+  }
+  .faucet-stat {
+    background: rgba(6, 2, 16, 0.6); padding: 16px;
+    text-align: center;
+  }
+  .faucet-stat-label {
+    font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
+    color: var(--push-text-muted); text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .faucet-stat-value {
+    font-size: 18px; font-weight: 700; color: var(--push-text);
+  }
+  .faucet-stat-value.violet { color: var(--push-violet); }
+
+  .faucet-body { padding: 28px 32px 32px; }
+
+  /* Wallet info when connected */
+  .wallet-info {
+    background: var(--push-surface); border: 1px solid var(--push-border);
+    border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;
+    display: none;
+  }
+  .wallet-info.show { display: block; }
+  .wallet-info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px;
+  }
+  .wallet-info-row + .wallet-info-row { margin-top: 10px; }
+  .wallet-info-label { color: var(--push-text-muted); }
+  .wallet-info-value { color: var(--push-text); font-family: 'Space Mono', monospace; font-size: 12px; }
+
+  /* Request button */
+  .request-btn {
+    width: 100%; padding: 16px; border-radius: var(--radius-sm);
+    font-size: 16px; font-weight: 700; font-family: 'Outfit', sans-serif;
+    cursor: pointer; transition: all 0.3s; border: none;
+    background: linear-gradient(135deg, var(--push-purple), var(--push-magenta));
+    color: #fff; box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+    position: relative; overflow: hidden;
+  }
+  .request-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(124,58,237,0.45); }
+  .request-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .request-btn.cooldown-active {
+    background: var(--push-surface); color: var(--push-text-dim);
+    border: 1px solid var(--push-border); box-shadow: none;
+  }
+
+  /* Message */
+  .faucet-message {
+    margin-top: 16px; padding: 12px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; text-align: center; display: none;
+  }
+  .faucet-message.show { display: block; }
+  .faucet-message.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: var(--push-success); }
+  .faucet-message.error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--push-error); }
+  .faucet-message.info { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); color: var(--push-violet); }
+
+  /* Cooldown timer */
+  .cooldown-timer {
+    text-align: center; margin-top: 12px;
+    font-family: 'Space Mono', monospace; font-size: 12px; color: var(--push-text-muted);
+    display: none;
+  }
+  .cooldown-timer.show { display: block; }
+  .cooldown-timer .time { color: var(--push-violet); font-size: 14px; font-weight: 700; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--push-border); padding: 24px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--push-text-muted);
+  }
+  footer a { color: var(--push-violet); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-links { display: flex; gap: 20px; font-family: 'Space Mono', monospace; font-size: 11px; }
+
+  @media (max-width: 768px) {
+    header { padding: 16px 20px; }
+    .faucet-page { padding: 40px 16px; }
+    .faucet-header { padding: 24px 24px 0; }
+    .faucet-body { padding: 24px; }
+    .logo-tag { display: none; }
+    footer { padding: 20px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-atmosphere"></div>
+<div class="noise"></div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <a class="logo" href="/">
+      <div class="logo-icon">🐧</div>
+      <span class="logo-text">Puffles</span>
+      <span class="logo-tag">FAUCET</span>
+    </a>
+    <div class="header-right">
+      <div class="chain-badge"><div class="chain-dot"></div>Push Chain Testnet</div>
+      <button class="wallet-btn" id="wallet-btn" onclick="handleWalletClick()">Connect Wallet</button>
+    </div>
+  </header>
+
+  <!-- FAUCET -->
+  <main class="faucet-page">
+    <div class="faucet-card">
+      <div class="faucet-header">
+        <div class="faucet-icon">🚰</div>
+        <h1 class="faucet-title">Push Chain <span>Faucet</span></h1>
+        <p class="faucet-subtitle">Get free testnet PC tokens to explore the Puffles ecosystem. Connect your wallet and request tokens once every 24 hours.</p>
+
+        <div class="faucet-stats">
+          <div class="faucet-stat">
+            <div class="faucet-stat-label">Drip</div>
+            <div class="faucet-stat-value violet" id="stat-drip">0.1 PC</div>
+          </div>
+          <div class="faucet-stat">
+            <div class="faucet-stat-label">Balance</div>
+            <div class="faucet-stat-value" id="stat-balance">—</div>
+          </div>
+          <div class="faucet-stat">
+            <div class="faucet-stat-label">Total Drips</div>
+            <div class="faucet-stat-value" id="stat-drips">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faucet-body">
+        <div class="wallet-info" id="wallet-info">
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Wallet</span>
+            <span class="wallet-info-value" id="info-wallet">—</span>
+          </div>
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Your Balance</span>
+            <span class="wallet-info-value" id="info-balance">—</span>
+          </div>
+        </div>
+
+        <button class="request-btn" id="request-btn" onclick="handleRequest()" disabled>
+          Connect Wallet to Request
+        </button>
+
+        <div class="cooldown-timer" id="cooldown-timer">
+          Next request available in: <span class="time" id="cooldown-time">—</span>
+        </div>
+
+        <div class="faucet-message" id="faucet-message"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>Puffles Faucet — Push Chain Testnet</span>
+    <div class="footer-links">
+      <a href="/">Marketplace</a>
+      <a href="/launch">Launchpad</a>
+      <a href="https://donut.push.network" target="_blank">Explorer</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const RPC = 'https://evm.donut.rpc.push.org/';
+const PUSH_CHAIN = {
+  chainId: '0xA465',  // 42101 decimal
+  chainName: 'Push Chain Testnet',
+  rpcUrls: ['https://evm.donut.rpc.push.org/'],
+  nativeCurrency: { name: 'Push Coin', symbol: 'PC', decimals: 18 },
+  blockExplorerUrls: ['https://donut.push.network']
+};
+
+// FAUCET CONTRACT — UPDATE THIS AFTER DEPLOYMENT
+const FAUCET_ADDRESS = '0xd277CfB5B927266482405b5bAE62d8f74e1908B8';
+const FAUCET_ABI = [
+  'function request() external',
+  'function dripAmount() view returns (uint256)',
+  'function cooldown() view returns (uint256)',
+  'function totalDrips() view returns (uint256)',
+  'function totalDistributed() view returns (uint256)',
+  'function lastRequest(address) view returns (uint256)',
+  'function timeUntilNextRequest(address) view returns (uint256)'
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let provider = null;
+let signer = null;
+let userAddress = null;
+let faucetContract = null;
+let readProvider = null;
+let readFaucet = null;
+let cooldownInterval = null;
+let isRequesting = false;
+
+// ═══════════════════════════════════════════════════════
+// WALLET CONNECTION
+// ═══════════════════════════════════════════════════════
+
+async function handleWalletClick() {
+  if (userAddress) {
+    // Disconnect
+    userAddress = null;
+    signer = null;
+    provider = null;
+    faucetContract = null;
+    document.getElementById('wallet-btn').textContent = 'Connect Wallet';
+    document.getElementById('wallet-btn').classList.remove('connected');
+    document.getElementById('wallet-info').classList.remove('show');
+    document.getElementById('request-btn').textContent = 'Connect Wallet to Request';
+    document.getElementById('request-btn').disabled = true;
+    document.getElementById('request-btn').classList.remove('cooldown-active');
+    document.getElementById('cooldown-timer').classList.remove('show');
+    hideMessage();
+    return;
+  }
+
+  if (typeof window.ethereum === 'undefined') {
+    showMessage('error', 'MetaMask not detected. Please install MetaMask to use the faucet.');
+    return;
+  }
+
+  try {
+    // Request accounts
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    userAddress = accounts[0];
+
+    // Ensure correct network
+    await switchToPushChain();
+
+    // Setup providers
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    faucetContract = new ethers.Contract(FAUCET_ADDRESS, FAUCET_ABI, signer);
+
+    // Update UI
+    const shortAddr = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+    document.getElementById('wallet-btn').textContent = shortAddr;
+    document.getElementById('wallet-btn').classList.add('connected');
+
+    // Show wallet info
+    document.getElementById('wallet-info').classList.add('show');
+    document.getElementById('info-wallet').textContent = shortAddr;
+
+    // Fetch user balance
+    const balance = await provider.getBalance(userAddress);
+    document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
+
+    // Check cooldown and update button
+    await updateCooldownState();
+
+    // Listen for account/chain changes
+    window.ethereum.on('accountsChanged', handleAccountChange);
+    window.ethereum.on('chainChanged', () => window.location.reload());
+
+  } catch (e) {
+    console.error('Wallet connection failed:', e);
+    if (e.code === 4001) {
+      showMessage('info', 'Connection request cancelled.');
+    } else {
+      showMessage('error', 'Failed to connect wallet: ' + (e.message || 'Unknown error'));
+    }
+  }
+}
+
+async function switchToPushChain() {
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: PUSH_CHAIN.chainId }]
+    });
+  } catch (switchError) {
+    // Chain not added yet — add it
+    if (switchError.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [PUSH_CHAIN]
+      });
+    } else {
+      throw switchError;
+    }
+  }
+}
+
+function handleAccountChange(accounts) {
+  if (accounts.length === 0) {
+    // Disconnected
+    handleWalletClick();
+  } else {
+    window.location.reload();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// FAUCET LOGIC
+// ═══════════════════════════════════════════════════════
+
+async function updateCooldownState() {
+  if (!userAddress || !readFaucet) return;
+
+  try {
+    const remaining = await readFaucet.timeUntilNextRequest(userAddress);
+    const seconds = Number(remaining);
+
+    const btn = document.getElementById('request-btn');
+
+    if (seconds > 0) {
+      btn.textContent = 'Cooldown Active';
+      btn.disabled = true;
+      btn.classList.add('cooldown-active');
+      startCooldownTimer(seconds);
+    } else {
+      btn.textContent = 'Request 0.1 PC';
+      btn.disabled = false;
+      btn.classList.remove('cooldown-active');
+      document.getElementById('cooldown-timer').classList.remove('show');
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    }
+  } catch (e) {
+    console.error('Cooldown check failed:', e);
+    document.getElementById('request-btn').textContent = 'Request 0.1 PC';
+    document.getElementById('request-btn').disabled = false;
+  }
+}
+
+function startCooldownTimer(seconds) {
+  if (cooldownInterval) clearInterval(cooldownInterval);
+
+  let remaining = seconds;
+  const timerEl = document.getElementById('cooldown-timer');
+  const timeEl = document.getElementById('cooldown-time');
+  timerEl.classList.add('show');
+
+  function update() {
+    if (remaining <= 0) {
+      clearInterval(cooldownInterval);
+      timerEl.classList.remove('show');
+      const btn = document.getElementById('request-btn');
+      btn.textContent = 'Request 0.1 PC';
+      btn.disabled = false;
+      btn.classList.remove('cooldown-active');
+      return;
+    }
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    timeEl.textContent = `${h}h ${m}m ${s}s`;
+    remaining--;
+  }
+
+  update();
+  cooldownInterval = setInterval(update, 1000);
+}
+
+async function handleRequest() {
+  if (!userAddress || isRequesting) return;
+
+  isRequesting = true;
+  const btn = document.getElementById('request-btn');
+  btn.textContent = 'Requesting...';
+  btn.disabled = true;
+  hideMessage();
+
+  try {
+    const tx = await faucetContract.request();
+    showMessage('info', 'Transaction sent: ' + tx.hash.slice(0, 14) + '...');
+    await tx.wait();
+    showMessage('success', 'You received 0.1 PC! Tx: ' + tx.hash.slice(0, 18) + '...');
+
+    // Update balance
+    const balance = await provider.getBalance(userAddress);
+    document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
+
+    // Refresh stats
+    await loadFaucetStats();
+
+    // Start cooldown
+    await updateCooldownState();
+
+  } catch (e) {
+    console.error('Request failed:', e);
+    let msg = 'Transaction failed';
+    if (e.reason) msg = e.reason;
+    else if (e.message) {
+      if (e.message.includes('CooldownActive')) {
+        msg = 'Cooldown still active. Please wait.';
+      } else if (e.message.includes('InsufficientBalance')) {
+        msg = 'Faucet is empty. Please try again later.';
+      } else if (e.message.includes('user rejected')) {
+        msg = 'Transaction cancelled.';
+      } else {
+        msg = e.message.length > 100 ? e.message.slice(0, 100) + '...' : e.message;
+      }
+    }
+    showMessage('error', msg);
+    btn.textContent = 'Request 0.1 PC';
+    btn.disabled = false;
+  }
+
+  isRequesting = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════
+
+async function loadFaucetStats() {
+  try {
+    const [dripAmount, balance, totalDrips] = await Promise.all([
+      readFaucet.dripAmount(),
+      readProvider.getBalance(FAUCET_ADDRESS),
+      readFaucet.totalDrips()
+    ]);
+
+    document.getElementById('stat-drip').textContent = parseFloat(ethers.formatEther(dripAmount)).toFixed(2) + ' PC';
+    document.getElementById('stat-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(2) + ' PC';
+    document.getElementById('stat-drips').textContent = Number(totalDrips).toLocaleString();
+  } catch (e) {
+    console.error('Failed to load faucet stats:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// MESSAGES
+// ═══════════════════════════════════════════════════════
+
+function showMessage(type, text) {
+  const el = document.getElementById('faucet-message');
+  el.className = 'faucet-message show ' + type;
+  el.textContent = text;
+}
+
+function hideMessage() {
+  const el = document.getElementById('faucet-message');
+  el.className = 'faucet-message';
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+async function init() {
+  // Read-only provider for stats
+  readProvider = new ethers.JsonRpcProvider(RPC);
+  readFaucet = new ethers.Contract(FAUCET_ADDRESS, FAUCET_ABI, readProvider);
+
+  // Load faucet stats
+  await loadFaucetStats();
+
+  // Auto-connect if already authorized
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        // Silently reconnect
+        userAddress = accounts[0];
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
+        faucetContract = new ethers.Contract(FAUCET_ADDRESS, FAUCET_ABI, signer);
+
+        const shortAddr = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+        document.getElementById('wallet-btn').textContent = shortAddr;
+        document.getElementById('wallet-btn').classList.add('connected');
+        document.getElementById('wallet-info').classList.add('show');
+        document.getElementById('info-wallet').textContent = shortAddr;
+
+        const balance = await provider.getBalance(userAddress);
+        document.getElementById('info-balance').textContent = parseFloat(ethers.formatEther(balance)).toFixed(4) + ' PC';
+
+        await updateCooldownState();
+
+        window.ethereum.on('accountsChanged', handleAccountChange);
+        window.ethereum.on('chainChanged', () => window.location.reload());
+      }
+    } catch (e) {
+      console.log('Auto-connect skipped');
+    }
+  }
+
+  // Refresh stats every 30s
+  setInterval(loadFaucetStats, 30000);
+}
+
+init().catch(console.error);
+</script>
+
+</body>
+</html>
