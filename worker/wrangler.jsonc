@@ -1,0 +1,10 @@
+{
+  "name": "puffles-faucet",
+  "main": "index.js",
+  "compatibility_date": "2025-02-12",
+  "vars": {
+    "FAUCET_ADDRESS": "0x0376464A44d5A33D2C33DAaBa90aC14C78C00151",
+    "RPC_URL": "https://evm.donut.rpc.push.org/",
+    "ALLOWED_ORIGIN": "https://puffles.io"
+  }
+}

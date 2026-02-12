@@ -305,7 +305,7 @@
 // CONFIG
 // ═══════════════════════════════════════════════════════
 const RPC = 'https://evm.donut.rpc.push.org/';
-const RELAY_URL = '/api/faucet';   // Cloudflare Pages Function
+const RELAY_URL = 'https://puffles-faucet.penguinpecker1.workers.dev';   // Cloudflare Pages Function
 
 // Faucet contract (read-only for stats/cooldown checks)
 const FAUCET_ADDRESS = '0x0376464A44d5A33D2C33DAaBa90aC14C78C00151';
@@ -407,7 +407,7 @@ async function handleRequest() {
     const response = await fetch(RELAY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address: userAddress, signature, message })
+      body: JSON.stringify({ address: userAddress.toLowerCase(), signature, message })
     });
 
     const data = await response.json();
