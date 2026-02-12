@@ -1,4 +1,4 @@
-/mint  /mint.html  200
-/mint/*  /mint.html  200
-/collection  /collection.html  200
-/collection/*  /collection.html  200
+/mint  /_mint.html  200
+/mint/*  /_mint.html  200
+/collection  /_collection.html  200
+/collection/*  /_collection.html  200
