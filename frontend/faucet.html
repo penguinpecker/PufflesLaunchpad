@@ -418,7 +418,7 @@ async function handleRequest() {
 
     // Success!
     const shortTx = data.txHash.slice(0, 18) + '...';
-    showMessage('success', `You received 0.1 PC! Tx: ${shortTx}`);
+    showMessage('success', `You received 0.1 PC! <a href="https://explorer.push.org/tx/${data.txHash}" target="_blank" style="color:inherit;text-decoration:underline">View transaction ↗</a>`);
 
     // Refresh balance and stats
     const balance = await readProvider.getBalance(userAddress);
@@ -524,7 +524,7 @@ async function loadFaucetStats() {
 function showMessage(type, text) {
   const el = document.getElementById('faucet-message');
   el.className = 'faucet-message show ' + type;
-  el.textContent = text;
+  el.innerHTML = text;
 }
 function hideMessage() {
   document.getElementById('faucet-message').className = 'faucet-message';
