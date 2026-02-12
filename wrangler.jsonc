@@ -1,9 +1,4 @@
 {
   "name": "puffles",
-  "main": "src/worker.js",
-  "compatibility_date": "2024-12-01",
-  "assets": {
-    "directory": "./frontend",
-    "binding": "ASSETS"
-  }
+  "compatibility_date": "2024-12-01"
 }
