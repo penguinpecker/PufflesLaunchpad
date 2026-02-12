@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puffles — Collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f; color: #e8e4f0; font-family: 'Space Mono', monospace;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; position: relative;
+  }
+  .orb1 { position: fixed; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(221,107,255,.12) 0%, transparent 70%); top: -200px; right: -150px; filter: blur(80px); pointer-events: none; }
+  .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(221,107,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(221,107,255,.03) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; }
+  .content { position: relative; z-index: 1; text-align: center; padding: 40px 20px; }
+  .logo { font-size: 48px; margin-bottom: 16px; }
+  h2 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; margin-bottom: 8px; }
+  p { color: rgba(232,228,240,.5); font-size: 14px; margin-bottom: 24px; }
+  a { color: #dd6bff; text-decoration: none; font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 8px 20px; border: 1px solid rgba(221,107,255,.3); border-radius: 100px; }
+  a:hover { background: rgba(221,107,255,.08); }
+</style>
+</head>
+<body>
+  <div class="orb1"></div>
+  <div class="grid"></div>
+  <div class="content">
+    <div class="logo">🏪</div>
+    <h2>Marketplace — Coming Soon</h2>
+    <p>Trade NFTs on Push Chain. List, bid, and discover collections.</p>
+    <a href="/">← Back to Puffles</a>
+  </div>
+</body>
+</html>

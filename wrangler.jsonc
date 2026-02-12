@@ -1,8 +1,9 @@
 {
   "name": "puffles",
+  "main": "src/worker.js",
   "compatibility_date": "2024-12-01",
   "assets": {
     "directory": "./frontend",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS"
   }
 }

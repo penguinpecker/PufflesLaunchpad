@@ -42,34 +42,35 @@
 
     const PHASE_NAMES = { 0: "PAUSED", 1: "WHITELIST", 2: "PUBLIC" };
 
-    // ─── Resolve collection from URL path or query param ───
-    // Supports: /test-puffles, /0xe21d..., ?collection=0x...
+    // ─── Resolve collection from URL path: /mint/{slug-or-address} ───
     let COLLECTION = null;
     let COLLECTION_SLUG = null;
     let COLLECTION_RESOLVING = true;
 
     async function resolveCollection() {
-      const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
+      // Parse: /mint/test-puffles or /mint/0xAddress
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      // parts = ["mint", "test-puffles"] or ["mint", "0x..."] or ["mint"]
+      const value = parts[1] || "";
+
+      // Also support legacy ?collection=0x... query param
       const params = new URLSearchParams(window.location.search);
       const queryAddr = params.get("collection");
-      const querySlug = params.get("slug");
 
-      // 1. Direct address in path
-      if (path && /^0x[a-fA-F0-9]{40}$/.test(path)) {
-        COLLECTION = ethers.getAddress(path);
+      // 1. Address in path: /mint/0xAbCdEf...
+      if (/^0x[a-fA-F0-9]{40}$/.test(value)) {
+        COLLECTION = ethers.getAddress(value);
         COLLECTION_RESOLVING = false;
         return;
       }
 
-      // 2. Slug in query param (from SPA redirect) or slug in path
-      const slug = querySlug || (path && path !== "mint.html" && path !== "mint" && path !== "index.html" ? path : null);
-      if (slug) {
-        COLLECTION_SLUG = slug.toLowerCase();
+      // 2. Slug in path: /mint/test-puffles → resolve via registry
+      if (value) {
+        COLLECTION_SLUG = value.toLowerCase();
         try {
           const provider = new ethers.JsonRpcProvider("https://evm.donut.rpc.push.org/");
           const registry = new ethers.Contract(REGISTRY, [
-            "function resolve(string slug) view returns (address)",
-            "function getCollection(address) view returns (tuple(string name, string slug, address creator, uint256 registeredAt, bool verified))"
+            "function resolve(string slug) view returns (address)"
           ], provider);
           const addr = await registry.resolve(COLLECTION_SLUG);
           if (addr && addr !== "0x0000000000000000000000000000000000000000") {
@@ -82,7 +83,7 @@
         return;
       }
 
-      // 3. Query param address fallback
+      // 3. Legacy fallback: ?collection=0x...
       if (queryAddr && /^0x[a-fA-F0-9]{40}$/.test(queryAddr)) {
         COLLECTION = ethers.getAddress(queryAddr);
       }
@@ -388,10 +389,10 @@
             <div style={{ fontSize: 48 }}>🐧</div>
             <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 24 }}>{COLLECTION_SLUG ? "Collection Not Found" : "No Collection Specified"}</h2>
             <p style={{ color: "rgba(232,228,240,.5)", maxWidth: 400 }}>{COLLECTION_SLUG
-              ? <>No collection registered for <code style={{ background: "rgba(221,107,255,.1)", padding: "2px 8px", borderRadius: 6, color: "#dd6bff" }}>/{COLLECTION_SLUG}</code>. Check the URL or browse collections from the portfolio.</>
-              : <>Visit <code style={{ background: "rgba(221,107,255,.1)", padding: "2px 8px", borderRadius: 6, color: "#dd6bff" }}>puffles.io/collection-name</code> or browse collections from the portfolio.</>
+              ? <>No collection registered for <code style={{ background: "rgba(221,107,255,.1)", padding: "2px 8px", borderRadius: 6, color: "#dd6bff" }}>/mint/{COLLECTION_SLUG}</code>. Check the URL or browse collections from the launchpad.</>
+              : <>Visit <code style={{ background: "rgba(221,107,255,.1)", padding: "2px 8px", borderRadius: 6, color: "#dd6bff" }}>puffles.io/mint/collection-name</code> or browse collections from the launchpad.</>
             }</p>
-            <a href="/" style={{ color: "#dd6bff", textDecoration: "none", fontFamily: "'Space Grotesk',sans-serif", fontSize: 14, marginTop: 8, padding: "8px 20px", border: "1px solid rgba(221,107,255,.3)", borderRadius: 100 }}>← Browse Collections</a>
+            <a href="/launch" style={{ color: "#dd6bff", textDecoration: "none", fontFamily: "'Space Grotesk',sans-serif", fontSize: 14, marginTop: 8, padding: "8px 20px", border: "1px solid rgba(221,107,255,.3)", borderRadius: 100 }}>← Browse Collections</a>
           </div>
         );
       }
