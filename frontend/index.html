@@ -399,6 +399,8 @@
 const PUSH_RPC = 'https://evm.donut.rpc.push.org/';
 const PUFFLECALL_ADDRESS = '0x27D910BdBCAA3A283B5EDe98f3edfC82324FD63F';
 const FACTORY_ADDRESS = '0x6DB965f96D35853Ea7642D77ed945897447aD5b4';
+const REGISTRY_ADDRESS = '0xf432bAca7C6CA54a2D02B6b30ccdE9d2cD104538';
+window._slugCache = {};
 const EXPLORER = 'https://donut.push.network';
 const POLL_INTERVAL = 5000;
 
@@ -457,7 +459,9 @@ async function init() {
 // ═══════════════════════════════════════════════════════
 function navigateTo(view, addr) {
   if (view === 'mint' && addr) {
-    window.open('mint.html?collection=' + addr, '_blank');
+    // Use slug if we have one cached, otherwise use address path
+    const slug = window._slugCache && window._slugCache[addr.toLowerCase()];
+    window.open('/' + (slug || addr), '_blank');
   }
 }
 
@@ -479,6 +483,23 @@ async function discoverCollections() {
   const addrCalls = newIndexes.map(i => ({ target: FACTORY_ADDRESS, allowFailure: true, callData: factoryIface.encodeFunctionData('collections', [i]) }));
   const addrResults = await puffleCall.aggregate3.staticCall(addrCalls);
   addrResults.forEach(r => { if (r.success) collectionAddresses.push(ethers.AbiCoder.defaultAbiCoder().decode(['address'], r.returnData)[0]); });
+
+  // Resolve slugs from registry
+  try {
+    const registryIface = new ethers.Interface(['function collectionToSlug(address) view returns (string)']);
+    const slugCalls = collectionAddresses.map(addr => ({ target: REGISTRY_ADDRESS, allowFailure: true, callData: registryIface.encodeFunctionData('collectionToSlug', [addr]) }));
+    if (slugCalls.length > 0) {
+      const slugResults = await puffleCall.aggregate3.staticCall(slugCalls);
+      slugResults.forEach((r, i) => {
+        if (r.success) {
+          try {
+            const slug = registryIface.decodeFunctionResult('collectionToSlug', r.returnData)[0];
+            if (slug) window._slugCache[collectionAddresses[i].toLowerCase()] = slug;
+          } catch(e) {}
+        }
+      });
+    }
+  } catch(e) { console.warn('Slug resolution failed:', e); }
 }
 
 // ═══════════════════════════════════════════════════════

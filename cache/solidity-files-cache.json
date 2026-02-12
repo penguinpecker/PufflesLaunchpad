@@ -661,6 +661,80 @@
       "artifacts": [
         "Create2"
       ]
+    },
+    "/Users/penguinpecker/Documents/PufflesLaunchpad/contracts/PuffleCall.sol": {
+      "lastModificationDate": 1770833865807,
+      "contentHash": "cbe545df887efe9a37ea961b10d252ba",
+      "sourceName": "contracts/PuffleCall.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.22"
+      ],
+      "artifacts": [
+        "PuffleCall"
+      ]
+    },
+    "/Users/penguinpecker/Documents/PufflesLaunchpad/contracts/PufflesRegistry.sol": {
+      "lastModificationDate": 1770872405232,
+      "contentHash": "d3967b4a47f5b969a0de51471dcd87e5",
+      "sourceName": "contracts/PufflesRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.22"
+      ],
+      "artifacts": [
+        "PufflesRegistry"
+      ]
     }
   }
 }
