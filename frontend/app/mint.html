@@ -51,11 +51,13 @@
       // Parse: /mint/test-puffles or /mint/0xAddress
       const parts = window.location.pathname.split("/").filter(Boolean);
       // parts = ["mint", "test-puffles"] or ["mint", "0x..."] or ["mint"]
-      const value = parts[1] || "";
-
-      // Also support legacy ?collection=0x... query param
+      // Also support ?slug= query param (fallback routing) and legacy ?collection=0x...
       const params = new URLSearchParams(window.location.search);
+      const querySlug = params.get("slug");
       const queryAddr = params.get("collection");
+      // /mint/{slug} → parts = ["mint", "slug"], /app/mint?slug=X → parts = ["app", "mint"]
+      const pathSlug = parts[0] === "mint" ? (parts[1] || "") : "";
+      const value = querySlug || pathSlug;
 
       // 1. Address in path: /mint/0xAbCdEf...
       if (/^0x[a-fA-F0-9]{40}$/.test(value)) {

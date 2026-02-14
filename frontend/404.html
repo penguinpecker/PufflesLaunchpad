@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // If someone hits a 404 for /mint/* or /collection/*, route them correctly
+  (function(){
+    var p = window.location.pathname;
+    var m;
+    if ((m = p.match(/^\/mint(?:\/(.+))?$/))) {
+      window.location.replace('/app/mint' + (m[1] ? '?slug=' + encodeURIComponent(m[1]) : ''));
+      return;
+    }
+    if ((m = p.match(/^\/collection(?:\/(.+))?$/))) {
+      window.location.replace('/app/collection' + (m[1] ? '?slug=' + encodeURIComponent(m[1]) : ''));
+      return;
+    }
+  })();
+</script>
+<title>404 — Puffles</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e8e4f0; font-family: 'Space Mono', monospace; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .c { text-align: center; }
+  h1 { font-size: 48px; margin-bottom: 12px; }
+  p { color: rgba(232,228,240,.5); font-size: 14px; margin-bottom: 24px; }
+  a { color: #dd6bff; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="c">
+    <h1>🐧 404</h1>
+    <p>Page not found</p>
+    <a href="/">← Back to Puffles</a>
+  </div>
+</body>
+</html>

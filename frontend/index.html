@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Puffles — NFT Platform on Push Chain</title>
+<script>
+  // Fallback router — if _redirects fails during a deploy, catch it here
+  (function(){
+    var p = window.location.pathname;
+    var m;
+    if ((m = p.match(/^\/mint(?:\/(.+))?$/))) {
+      window.location.replace('/app/mint' + (m[1] ? '?slug=' + encodeURIComponent(m[1]) : ''));
+      return;
+    }
+    if ((m = p.match(/^\/collection(?:\/(.+))?$/))) {
+      window.location.replace('/app/collection' + (m[1] ? '?slug=' + encodeURIComponent(m[1]) : ''));
+      return;
+    }
+  })();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
