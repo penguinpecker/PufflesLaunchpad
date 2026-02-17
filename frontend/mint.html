@@ -316,7 +316,7 @@
       if (!COLLECTION) {
         return (
           <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#e8e4f0", fontFamily: "'Space Mono',monospace", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: 40, textAlign: "center" }}>
-            <div style={{ fontSize: 48 }}>🐧</div>
+            <img src="/puffles-logo.png" alt="Puffles" style={{ width: 64, height: 64, borderRadius: 16 }} />
             <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 24 }}>{COLLECTION_SLUG ? "Collection Not Found" : "No Collection Specified"}</h2>
             <p style={{ color: "rgba(232,228,240,.5)", maxWidth: 400 }}>{COLLECTION_SLUG
               ? <>No collection registered for <code style={{ background: "rgba(221,107,255,.1)", padding: "2px 8px", borderRadius: 6, color: "#dd6bff" }}>/mint/{COLLECTION_SLUG}</code>. Check the URL or browse collections from the launchpad.</>

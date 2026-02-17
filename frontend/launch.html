@@ -64,7 +64,7 @@
     background: rgba(6,2,16,0.6); position: sticky; top: 0; z-index: 100;
   }
   .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; cursor: pointer; }
-  .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--push-violet), var(--push-magenta)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 24px rgba(139,92,246,0.3); }
+  .logo-icon { width: 42px; height: 42px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 24px rgba(139,92,246,0.3); } .logo-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .logo-text { font-weight: 800; font-size: 22px; background: linear-gradient(135deg, #fff, var(--push-text)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
   .logo-tag { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--push-text-muted); background: var(--push-surface); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--push-border); letter-spacing: 0.5px; }
   .header-right { display: flex; align-items: center; gap: 16px; }
@@ -341,7 +341,7 @@
   <!-- HEADER -->
   <header>
     <div class="logo" onclick="window.location.href='/'">
-      <div class="logo-icon">🐧</div>
+      <div class="logo-icon"><img src="/puffles-logo.png" alt="Puffles" /></div>
       <span class="logo-text">Puffles</span>
       <span class="logo-tag">LAUNCHPAD</span>
     </div>
@@ -384,7 +384,7 @@
 
 
   <footer>
-    <div>Built with 🐧 by <a href="#">Puffles</a> — powered by <a href="https://push.org" target="_blank">Push Chain</a></div>
+    <div>Built with <img src="/puffles-logo.png" alt="Puffles" style="width:18px;height:18px;border-radius:4px;vertical-align:middle;margin:0 2px" /> by <a href="#">Puffles</a> — powered by <a href="https://push.org" target="_blank">Push Chain</a></div>
     <div class="footer-right">
       <span>PuffleCall: <a href="https://donut.push.network/address/0x27D910BdBCAA3A283B5EDe98f3edfC82324FD63F" target="_blank">0x27D9...D63F</a></span>
       <span id="last-update">—</span>
@@ -574,7 +574,7 @@ function updateStats() {
 function renderCards() {
   const grid = document.getElementById('collections-grid');
   const filtered = activeFilter === 'all' ? collectionData : collectionData.filter(c => c.status === activeFilter);
-  if (collectionData.length === 0) { grid.innerHTML = '<div class="empty-state"><div class="emoji">🐧</div><h3>No collections yet</h3><p>Collections launched through Puffles Factory will appear here automatically.</p></div>'; return; }
+  if (collectionData.length === 0) { grid.innerHTML = '<div class="empty-state"><div class="emoji"><img src="/puffles-logo.png" alt="Puffles" style="width:64px;height:64px;border-radius:16px" /></div><h3>No collections yet</h3><p>Collections launched through Puffles Factory will appear here automatically.</p></div>'; return; }
   if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state"><div class="emoji">🔍</div><p>No collections match this filter.</p></div>'; return; }
   grid.innerHTML = filtered.map(col => {
     const pct = Math.min(100, col.pctMinted).toFixed(1);
@@ -586,7 +586,7 @@ function renderCards() {
     else if (col.status === 'minted') statusHTML = '<div class="card-status status-minted">Minted Out</div>';
     else statusHTML = '<div class="card-status status-paused">Paused</div>';
     return '<div class="card" data-addr="' + col.address + '">' +
-      '<div class="card-banner"><div class="card-banner-placeholder">🐧</div>' + statusHTML + '</div>' +
+      '<div class="card-banner"><div class="card-banner-placeholder"><img src="/puffles-logo.png" alt="Puffles" style="width:48px;height:48px;border-radius:12px;opacity:0.5" /></div>' + statusHTML + '</div>' +
       '<div class="card-body">' +
         '<div class="card-header"><div class="card-name">' + esc(col.name) + '</div><div class="card-symbol">' + esc(col.symbol) + '</div></div>' +
         '<div class="mint-progress"><div class="progress-header"><span class="progress-label">Minted</span><span class="progress-nums">' + col.totalSupply.toLocaleString() + ' / ' + col.maxSupply.toLocaleString() + '</span></div><div class="progress-bar"><div class="progress-fill ' + (isFull?'full':'') + '" style="width:' + pct + '%"></div></div><div class="progress-pct">' + pct + '%</div></div>' +
